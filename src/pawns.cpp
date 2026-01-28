@@ -8,5 +8,3 @@
 /// ---------------------------------------------------------------------------------
 #include <iostream>
 #include "pawns.hpp"
-
-void pawn::move() const { std::cout << "Pawn moves forward one or two squares." << std::endl; }
