@@ -11,12 +11,25 @@
 
 #include "piezas.hpp"
 
-class pawn : public pieza
+class Pawn : public Pieza
 {
   public:
-    pawn() {};
-    virtual ~pawn() override {};
-    virtual void move() const override;
+    Pawn(char file, char rank, PieceColor color) : Pieza(color) { set_position(file, rank); }
+
+    virtual ~Pawn() override {};
+    virtual void moves(std::vector<PiecePosition>& p) const override
+    {
+      if (is_black())
+      {
+      }
+      else if (is_white())
+      {
+      }
+      else
+      {
+        throw std::runtime_error("Invalid piece color");
+      }
+    }
 };
 
 #endif // ICHESS_SRC_PAWNS

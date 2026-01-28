@@ -1,20 +1,25 @@
 /// ---------------------------------------------------------------------------------
-/// @file      piezas.hpp
+/// @file      common.hpp
 /// @author    Calileus (https://github.com/Calileus/inheritance-chess)
 /// @brief     Basic Chess Engine demonstrating C++ inheritance and polymorphism.
 /// @version   1.0
-/// @date      2026-01-01
+/// @date      2026-01-27
 /// @copyright MIT License - see LICENSE file for details
 /// ---------------------------------------------------------------------------------
-#ifndef ICHESS_SRC_PIEZAS
-#define ICHESS_SRC_PIEZAS
+#ifndef ICHESS_SRC_COMMON
+#define ICHESS_SRC_COMMON
 
-class pieza
+enum class PieceColor : char
 {
-  public:
-    pieza() {};
-    virtual ~pieza()          = default;
-    virtual void move() const = 0;
+  NONE  = ' ',
+  WHITE = 'w',
+  BLACK = 'b'
 };
 
-#endif // ICHESS_SRC_PIEZAS
+struct PiecePosition
+{
+    char file; // e.g., 'a' through 'h'
+    char rank; // e.g., '1' through '8'
+};
+
+#endif // ICHESS_SRC_COMMON
