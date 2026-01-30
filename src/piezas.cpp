@@ -7,3 +7,46 @@
 /// @copyright MIT License - see LICENSE file for details
 /// ---------------------------------------------------------------------------------
 #include "piezas.hpp"
+
+#include <cctype>
+
+Pieza::Pieza() {}
+
+Pieza::Pieza(PieceColor col, PieceType rep) : color(col), type(rep) { set_position(' ', ' '); }
+
+bool Pieza::is_black() const { return color == PieceColor::BLACK; }
+bool Pieza::is_white() const { return color == PieceColor::WHITE; }
+
+void Pieza::set_position(char f, char r)
+{
+  if ('a' <= f && f <= 'h')
+  {
+    position.file = f;
+  }
+  else
+  {
+    position.file = ' ';
+  }
+  if ('1' <= r && r <= '8')
+  {
+    position.rank = r;
+  }
+  else
+  {
+    position.rank = ' ';
+  }
+}
+
+char Pieza::get_representation() const
+{
+  char res = ' ';
+  if (color == PieceColor::WHITE)
+  {
+    res = static_cast<char>(type);
+  }
+  else if (color == PieceColor::BLACK)
+  {
+    res = static_cast<char>(std::tolower(static_cast<char>(type)));
+  }
+  return res;
+}

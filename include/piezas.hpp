@@ -16,19 +16,17 @@ class Pieza
   private:
     PieceColor    color;
     PiecePosition position;
+    PieceType     type;
 
-    Pieza() {}; // Private constructor to prevent color-less instantiation
+    Pieza(); // Private constructor to prevent color-less instantiation
 
   public:
-    Pieza(PieceColor col) : color(col) {}
+    Pieza(PieceColor col, PieceType rep);
 
-    bool        is_black() const { return color == PieceColor::BLACK; }
-    bool        is_white() const { return color == PieceColor::WHITE; }
-    inline void set_position(char f, char r)
-    {
-      position.file = f;
-      position.rank = r;
-    }
+    bool is_black() const;
+    bool is_white() const;
+    void set_position(char f, char r);
+    char get_representation() const;
 
     virtual ~Pieza()                                        = default;
     virtual void moves(std::vector<PiecePosition>& p) const = 0;
