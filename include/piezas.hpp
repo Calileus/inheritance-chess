@@ -9,20 +9,19 @@
 #ifndef ICHESS_SRC_PIEZAS
 #define ICHESS_SRC_PIEZAS
 #include <vector>
-#include <cctype>
 #include "common.hpp"
 
 class Pieza
 {
   private:
-    PieceColor          color;
-    PiecePosition       position;
-    PieceRepresentation representation;
+    PieceColor    color;
+    PiecePosition position;
+    PieceType     type;
 
     Pieza(); // Private constructor to prevent color-less instantiation
 
   public:
-    Pieza(PieceColor col);
+    Pieza(PieceColor col, PieceType rep);
 
     bool is_black() const;
     bool is_white() const;

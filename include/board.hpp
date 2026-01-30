@@ -1,7 +1,7 @@
 /// ---------------------------------------------------------------------------------
 /// @file      board.hpp
 /// @author    Calileus (https://github.com/Calileus/inheritance-chess)
-/// @brief     Chess board console representation and display.
+/// @brief     Chess board console type and display.
 /// @version   1.0
 /// @date      2026-01-22
 /// @copyright MIT License - see LICENSE file for details

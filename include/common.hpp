@@ -16,7 +16,7 @@ enum class PieceColor : char
   BLACK = 'b'
 };
 
-enum class PieceRepresentation : char
+enum class PieceType : char
 {
   NONE   = ' ',
   PAWN   = 'P',
