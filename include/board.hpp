@@ -25,10 +25,11 @@ class Board
     void display() const;
     void setPiece(int row, int col, Pieza* piece);
     void addPieceOut(bool side, Pieza* piece);
+    void clearBoard();
 
   private:
-    std::array<std::array<Pieza*, BOARD_SIZE>, BOARD_SIZE> grid;
-    std::array<Pieza*, MAX_OUT_EACH_SIDE_BOARD>            w_out, b_out;
+    std::array<std::array<Pieza*, BOARD_SIZE>, BOARD_SIZE> grid  = {};
+    std::array<Pieza*, MAX_OUT_EACH_SIDE_BOARD>            w_out = {}, b_out = {};
 };
 
 #endif // ICHESS_SRC_BOARD

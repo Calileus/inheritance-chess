@@ -8,23 +8,35 @@
 /// ---------------------------------------------------------------------------------
 #include "board.hpp"
 
-static void clearBoard(Board& B)
+void Board::clearBoard()
 {
   for (int i = 0; i < Board::MAX_OUT_EACH_SIDE_BOARD; i++)
   {
-    B.setPieceOut(i, true, NULL);
-    B.setPieceOut(i, false, NULL);
+    if (w_out[i])
+    {
+      delete w_out[i];
+      w_out[i] = nullptr;
+    }
+    if (b_out[i])
+    {
+      delete b_out[i];
+      b_out[i] = nullptr;
+    }
   }
   for (int i = 0; i < Board::BOARD_SIZE; i++)
   {
     for (int j = 0; j < Board::BOARD_SIZE; j++)
     {
-      B.setPiece(i, j, NULL);
+      if (grid[i][j])
+      {
+        delete grid[i][j];
+        grid[i][j] = nullptr;
+      }
     }
   }
 }
 
-Board::Board() { clearBoard(*this); }
+Board::Board() { clearBoard(); }
 
 void Board::display() const
 {
@@ -63,7 +75,7 @@ void Board::setPiece(int row, int col, Pieza* piece)
     if (grid[row][col])
     {
       delete grid[row][col];
-      grid[row][col] = NULL;
+      grid[row][col] = nullptr;
     }
     grid[row][col] = piece;
   }
