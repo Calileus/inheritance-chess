@@ -48,7 +48,6 @@ class Board
     void cleanPieces();
 
     /// @brief Add a piece to the board.
-    /// @param piece Pointer to the Pieza object to add.
     /// @note  The board takes ownership of the piece pointer.
     void addPiece(Pieza* piece);
 
