@@ -1,4 +1,3 @@
-/// ---------------------------------------------------------------------------------
 /// @file      piezas.hpp
 /// @author    Calileus (https://github.com/Calileus/inheritance-chess)
 /// @brief     Base class for all chess pieces using polymorphism.
@@ -7,7 +6,7 @@
 /// @version   1.0
 /// @date      2026-01-01
 /// @copyright MIT License - see LICENSE file for details
-/// ---------------------------------------------------------------------------------
+
 #ifndef ICHESS_SRC_PIEZAS
 #define ICHESS_SRC_PIEZAS
 

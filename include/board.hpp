@@ -1,4 +1,3 @@
-/// ---------------------------------------------------------------------------------
 /// @file      board.hpp
 /// @author    Calileus (https://github.com/Calileus/inheritance-chess)
 /// @brief     Chess board management and console display.
@@ -7,7 +6,7 @@
 /// @version   1.0
 /// @date      2026-01-22
 /// @copyright MIT License - see LICENSE file for details
-/// ---------------------------------------------------------------------------------
+
 #ifndef ICHESS_SRC_BOARD
 #define ICHESS_SRC_BOARD
 

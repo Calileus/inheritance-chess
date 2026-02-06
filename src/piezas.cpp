@@ -1,4 +1,3 @@
-/// ---------------------------------------------------------------------------------
 /// @file      piezas.cpp
 /// @author    Calileus (https://github.com/Calileus/inheritance-chess)
 /// @brief     Implementation of the base Pieza (chess piece) class.
@@ -7,10 +6,10 @@
 /// @version   1.0
 /// @date      2026-01-01
 /// @copyright MIT License - see LICENSE file for details
-/// ---------------------------------------------------------------------------------
-#include "piezas.hpp"
 
 #include <cctype>
+
+#include "piezas.hpp"
 
 /// @brief   Default constructor for Pieza.
 /// @details Private to prevent instantiation without color and type specification.

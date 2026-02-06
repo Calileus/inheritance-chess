@@ -1,4 +1,3 @@
-/// ---------------------------------------------------------------------------------
 /// @file      board.cpp
 /// @author    Calileus (https://github.com/Calileus/inheritance-chess)
 /// @brief     Implementation of the Board class for chess game state management.
@@ -7,7 +6,7 @@
 /// @version   1.0
 /// @date      2026-01-22
 /// @copyright MIT License - see LICENSE file for details
-/// ---------------------------------------------------------------------------------
+
 #include "board.hpp"
 
 /// @brief   Construct the Board.
