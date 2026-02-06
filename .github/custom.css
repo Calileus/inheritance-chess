@@ -1,0 +1,8 @@
+/* This targets the logo in the default Doxygen header */
+#projectlogo img {
+    height: 60px;
+    /* Adjust this number to your liking */
+    width: auto;
+    /* Keeps the aspect ratio perfect */
+    padding: 10px;
+}
