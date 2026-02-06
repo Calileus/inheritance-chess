@@ -14,7 +14,7 @@
 class Pawn : public Pieza
 {
   public:
-    Pawn(char file, char rank, PieceColor color) : Pieza(color) { set_position(file, rank); }
+    Pawn(char file, char rank, PieceColor color) : Pieza(color, PieceType::PAWN) { set_position(file, rank); }
 
     virtual ~Pawn() override {};
     virtual void moves(std::vector<PiecePosition>& p) const override
