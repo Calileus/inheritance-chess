@@ -26,19 +26,15 @@ Inheritance Chess is an enterprise-grade C++ chess engine that demonstrates obje
 
 ```
 inheritance-chess/
-├── include/                    # Public header files
+├── include/
 │   ├── board.hpp              # Chess board interface and management
 │   ├── common.hpp             # Common types and definitions
 │   ├── piezas.hpp             # Base piece class definition
 │   └── pawns.hpp              # Pawn-specific implementation
-├── src/                       # Implementation files
+├── src/
 │   ├── board.cpp              # Board implementation
 │   ├── piezas.cpp             # Base piece class implementation
 │   └── pawns.cpp              # Pawn implementation
-├── doxy/                      # Documentation configuration
-│   └── Doxyfile               # Doxygen configuration
-├── build/                     # Build artifacts (generated)
-├── doc/                       # Generated documentation output
 ├── main.cpp                   # Application entry point
 ├── CMakeLists.txt             # CMake build configuration
 ├── build_project_windows.cmd  # Windows build script
@@ -47,10 +43,8 @@ inheritance-chess/
 └── README.md                  # This file
 ```
 
-### Directory Descriptions
-
-- **include/**: Public API declarations defining the chess engine's interface
-- **src/**: Implementation of core chess engine components
-- **doxy/**: Documentation generation configuration and styling
-- **build/**: Temporary directory containing compilation artifacts and build outputs
-- **doc/**: Generated HTML and reference documentation
+**Directory Descriptions**
+- **include/**: Public declarations defining the chess engine's interface.
+- **src/**: Implementation of core chess engine components.
+- **build/**: Temporary directory containing compilation artifacts and build outputs (Not commited).
+- **doc/**: Generated HTML and reference documentation (Not commited).
