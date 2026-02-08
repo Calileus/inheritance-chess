@@ -1,0 +1,301 @@
+################################################################################
+## @file build_and_run_project.cmake
+## @brief Cross-platform CMake build and execution script
+##
+## @details
+## Comprehensive build automation script that configures, compiles, and runs
+## a CMake-based C++ project across multiple platforms (Windows, Linux, macOS).
+## The script automatically detects the host platform, available compilers,
+## and system resources (CPU cores) to optimize the build process.
+##
+## @section workflow Workflow
+## -# Detects platform (Windows, Linux, macOS) and CPU architecture
+## -# Counts available CPU cores for parallel compilation
+## -# Automatically selects the best available build generator
+##    - Prefers Ninja for faster builds
+##    - Falls back to MinGW Makefiles on Windows with GCC
+##    - Uses system default generator as final fallback
+## -# Configures the project with CMake (Release build type)
+## -# Builds the project using all available CPU cores in parallel
+## -# Runs the compiled executable
+## -# Reports build status and execution results
+##
+## @section features Features
+## - **Platform Detection**: Automatically identifies Windows, macOS, or Linux
+## - **Architecture Detection**: Detects system architecture (x86_64, ARM64, etc.)
+## - **Intelligent Generator Selection**: Chooses the best available build system
+## - **Parallel Compilation**: Uses all system CPU cores to maximize build speed
+## - **Error Handling**: Graceful error reporting at each build stage
+## - **Cross-platform Support**: Works seamlessly across different operating systems
+## - **Executable Detection**: Handles platform-specific executable extensions
+## - **Automatic Execution**: Runs compiled binary after successful build
+##
+## @section usage Usage
+## @code
+##   cmake -P build_and_run_project.cmake
+## @endcode
+##
+## @section configuration Configuration
+## Edit the following variables at the beginning of the script to customize:
+## - `EXE_NAME`: Name of the executable to build (default: ichess_runner)
+## - `BUILD_DIR`: Output directory for build artifacts (default: build)
+##
+## @section platforms Supported Platforms & Generators
+## | Platform | Preferred Generator | Fallback 1 | Fallback 2 |
+## |----------|-------------------|-----------|-----------|
+## | Windows  | Ninja              | MinGW Makefiles | System Default |
+## | Linux    | Ninja              | Unix Makefiles  | System Default |
+## | macOS    | Ninja              | Xcode           | System Default |
+##
+## @section requirements Requirements
+## - CMake 3.15 or higher
+## - A C/C++ compiler (GCC, Clang, MSVC, etc.)
+## - At least one build system generator available
+##
+## @section performance Performance Optimization
+## This script maximizes build performance by:
+## - Utilizing all available CPU cores for parallel compilation
+## - Selecting the fastest available build generator (Ninja preferred)
+## - Using Release build configuration for optimized binaries
+## - Displaying compilation progress in real-time
+##
+## @author Build System
+## @version 1.0
+## @date 2026
+################################################################################
+
+cmake_minimum_required(VERSION 3.15)
+
+## @var EXE_NAME
+## @brief Name of the executable to build
+## @details Edit this to match your CMakeLists.txt project name
+set(EXE_NAME "ichess_runner")
+
+## @var BUILD_DIR
+## @brief Output directory for build artifacts
+## @details All build files and the executable will be placed here
+set(BUILD_DIR "build")
+
+################################################################################
+## @name Platform and Architecture Detection
+## @brief Identify the host system capabilities
+################################################################################
+
+message("================================ BUILD SYSTEM ================================")
+
+## @section platform_id Platform Identification
+## @brief Detects the operating system using CMake built-in variables
+
+if(WIN32)
+    set(DETECTED_PLATFORM "Windows")
+    message("Platform: Windows")
+elseif(APPLE)
+    set(DETECTED_PLATFORM "macOS")
+    message("Platform: macOS")
+elseif(UNIX)
+    set(DETECTED_PLATFORM "Linux")
+    message("Platform: Linux")
+else()
+    set(DETECTED_PLATFORM "Unknown")
+    message("Platform: Unknown")
+endif()
+
+## @section arch_id System Architecture Detection  
+## @brief Determines the processor architecture of the host system
+
+if(DEFINED ENV{PROCESSOR_ARCHITECTURE})
+    set(DETECTED_ARCH "$ENV{PROCESSOR_ARCHITECTURE}")
+    message("Architecture: ${DETECTED_ARCH}")
+else()
+    set(DETECTED_ARCH "${CMAKE_SYSTEM_PROCESSOR}")
+    message("Architecture: ${DETECTED_ARCH}")
+endif()
+
+## @section cores_detect CPU Core Detection
+## @brief Counts the number of available processor cores using ProcessorCount module
+## This value is used to enable parallel compilation with --parallel flag
+include(ProcessorCount)
+ProcessorCount(NUM_CORES)
+
+## @brief Validate core count and ensure minimum of 1
+if(NOT NUM_CORES GREATER_EQUAL 1)
+	set(NUM_CORES 1)
+endif()
+
+message("Available CPU Cores: ${NUM_CORES}")
+
+################################################################################
+## @name Compiler and Generator Detection
+## @brief Identify available build tools and select appropriate generator
+################################################################################
+
+## @section tool_discovery Tool Discovery
+## @brief Searches for common build generators and compilers in system PATH
+
+## @var NINJA_PATH
+## @brief Full path to ninja executable if found
+find_program(NINJA_PATH ninja)
+
+## @var GCC_PATH
+## @brief Full path to GCC compiler if found
+find_program(GCC_PATH gcc)
+
+## @var MAKE_PATH
+## @brief Full path to MinGW make executable if found
+find_program(MAKE_PATH mingw32-make)
+
+## @section generator_selection CMake Generator Selection
+## @brief Chooses the most appropriate build system generator
+## Selection priority: Ninja (fastest) > MinGW Makefiles (GCC) > System Default
+if(NINJA_PATH)
+    set(GENERATOR "Ninja")
+    message("Using Generator: Ninja (fast parallel build system)")
+elseif(CMAKE_HOST_WIN32 AND GCC_PATH AND MAKE_PATH)
+    set(GENERATOR "MinGW Makefiles")
+    message("Using Generator: MinGW Makefiles (GCC-based)")
+else()
+    set(GENERATOR "")
+    message("Using Generator: Trying System Default")
+endif()
+
+################################################################################
+## @name CMake Configuration Phase
+## @brief Configure the project build system from CMakeLists.txt
+################################################################################
+message("================================ CONFIGURATION PHASE ==========================")
+
+## @section config CMake Configuration
+## @brief Runs cmake to generate platform-specific build files
+
+## @var CONF_ARGS
+## @brief Arguments passed to cmake configuration
+## Includes: source directory (-S .), build directory (-B), build type, executable name
+
+set(CONF_ARGS -S . -B ${BUILD_DIR} -DCMAKE_BUILD_TYPE=Release -DEXE_NAME=${EXE_NAME})
+
+## @brief Append generator argument if one was automatically selected
+if(NOT "${GENERATOR}" STREQUAL "")
+    list(APPEND CONF_ARGS -G "${GENERATOR}")
+endif()
+
+## @brief Execute CMake configuration
+execute_process(
+    COMMAND ${CMAKE_COMMAND} ${CONF_ARGS} 
+    RESULT_VARIABLE CONFIG_RESULT
+)
+
+## @brief Check configuration result and abort on failure with helpful diagnostics
+if(NOT CONFIG_RESULT EQUAL 0) 
+    message(FATAL_ERROR "CMAKE CONFIGURATION FAILED
+    
+This likely means:
+- Your C/C++ compiler is not in the system PATH
+- CMake could not find the compiler for the selected generator
+- There's an error in your CMakeLists.txt file
+
+Please ensure you have a compatible compiler installed:
+- Windows: Visual Studio, GCC (MinGW), or Clang
+- Linux: GCC or Clang
+- macOS: Xcode Command Line Tools (clang)") 
+endif()
+
+message(STATUS "Configuration completed successfully")
+
+################################################################################
+## @name CMake Build Phase
+## @brief Compile the project using all available CPU cores
+################################################################################
+
+message("================================ BUILD PHASE ==================================")
+
+## @section build_exec Build Execution with Parallel Compilation
+## @brief Compiles the project using all detected CPU cores
+## The --parallel flag is critical for utilizing multi-core systems
+
+## @var   BUILD_COMMAND_ARGS
+## @brief Arguments for cmake --build command
+set(BUILD_COMMAND_ARGS --build ${BUILD_DIR} --config Release --parallel ${NUM_CORES})
+
+## @brief Execute the build with parallel compilation across all CPU cores
+## @note Build progress and compiler output is displayed in real-time
+message(STATUS "Building with ${NUM_CORES} parallel cores...")
+
+execute_process(
+    COMMAND ${CMAKE_COMMAND} ${BUILD_COMMAND_ARGS}
+    RESULT_VARIABLE BUILD_RESULT
+)
+
+## @brief Check build result and abort on failure with helpful diagnostics
+if(NOT BUILD_RESULT EQUAL 0) 
+    message(FATAL_ERROR "BUILD FAILED
+
+The compilation encountered errors. Check the output above for details.
+Common issues:
+- Missing header files or dependencies
+- Syntax errors in source code
+- Incompatible compiler flags or settings") 
+endif()
+
+message(STATUS "Build completed successfully using all ${NUM_CORES} CPU cores")
+
+################################################################################
+## @name Executable Location and Verification
+## @brief Determine expected executable location based on platform
+################################################################################
+
+message("================================ EXECUTION PHASE ==============================")
+
+## @section exe_location Executable Path Resolution
+## @brief Constructs the path to the compiled executable
+## Accounts for platform differences: .exe on Windows, bare name on Unix
+
+if(WIN32)
+    set(EXE_PATH "${BUILD_DIR}/${EXE_NAME}.exe")
+else()
+    set(EXE_PATH "${BUILD_DIR}/${EXE_NAME}")
+endif()
+
+message(STATUS "Looking for executable at: ${EXE_PATH}")
+
+## @brief Verify executable exists before attempting execution
+if(EXISTS ${EXE_PATH})
+    message(STATUS "Executable found, launching...")
+    message("================================================")
+    
+    ## @section exec_run Program Execution
+    ## @brief Runs the compiled executable and captures exit code
+    execute_process(
+        COMMAND ${EXE_PATH}
+        RESULT_VARIABLE RUN_RESULT
+    )
+    
+    message("================================================")
+    
+    ## @brief Report execution status
+    if(RUN_RESULT EQUAL 0)
+        message(STATUS "Application executed successfully (exit code: 0)")
+    else()
+        message(WARNING "Application exited with code: ${RUN_RESULT}")
+    endif()
+else()
+    message(FATAL_ERROR "EXECUTABLE NOT FOUND at: ${EXE_PATH}
+
+This usually means:
+- The build failed silently (check build output)
+- The executable name is incorrect (check EXE_NAME variable)
+- The project's CMakeLists.txt does not create an executable target")
+endif()
+
+################################################################################
+## @name Build Summary
+## @brief Final report showing build configuration and results
+################################################################################
+
+message("================================ BUILD COMPLETE ===============================")
+message(STATUS "Platform:      ${DETECTED_PLATFORM} (${DETECTED_ARCH})")
+message(STATUS "Generator:     ${GENERATOR}")
+message(STATUS "CPU Cores:     ${NUM_CORES}")
+message(STATUS "Build Type:    Release (optimized build)")
+message(STATUS "Build Dir:     ${BUILD_DIR}/")
+message(STATUS "Executable:    ${EXE_PATH}")
+message("================================================================================")
