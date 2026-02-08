@@ -1,4 +1,3 @@
-################################################################################
 ## @file    build_and_run_project.cmake
 ## @brief   Cross-platform CMake build and execution script
 ## @details Comprehensive build automation script that configures, compiles, and runs
@@ -25,11 +24,11 @@
 ## - **Automatic Execution Test**: Runs platform-specific compiled binary after successful build
 ##
 ## @section platforms Supported Platforms & Generators
-## | Platform | Default | Fallback 1      | Fallback 2     |
-## |----------|---------|-----------------|----------------|
-## | Windows  | Ninja   | MinGW Makefiles | System Default |
-## | Linux    | Ninja   | System Default  | -              |
-## | macOS    | Ninja   | System Default  | -              |
+## | Platform | Default         | Fallback 1      | Fallback 2     |
+## |----------|-----------------|-----------------|----------------|
+## | Windows  | MinGW Makefiles | Ninja           | System Default |
+## | Linux    | Ninja           | System Default  | -              |
+## | macOS    | Ninja           | System Default  | -              |
 ##
 ## @section usage Usage
 ## @code
@@ -49,16 +48,15 @@
 ## @section performance Performance Optimization
 ## This script maximizes build performance by:
 ## - Utilizing all available CPU cores for parallel compilation
-## - Selecting the fastest available build generator (Ninja preferred)
 ## - Using Release build configuration for optimized binaries
 ## - Displaying compilation progress in real-time
 ##
-## @author Build System
+## @author  Calileus
 ## @version 1.0
-## @date 2026
-################################################################################
+## @date    2026-02-08
 
 cmake_minimum_required(VERSION 3.28)
+set(CMAKE_BUILD_TYPE "Release")
 
 ## @var     EXE_NAME
 ## @brief   Name of the executable to build
@@ -79,65 +77,60 @@ else()
     set(EXE_PATH "${BUILD_DIR}/${EXE_NAME}")
 endif()
 
+## @section folderclean CMake Previous Build folder cleaning
+## @brief               Erase the build folder if it exists
+if(EXISTS "${BUILD_DIR}")
+    message(STATUS "Cleaning: Removing old build directory...")
+    file(REMOVE_RECURSE "${BUILD_DIR}")
+endif()
+file(MAKE_DIRECTORY "${BUILD_DIR}")
+
+## @section detect_generator Generator Detection
+## -# Calls detect_generator.cmake to get:
+##    - DETECTED_PLATFORM: The string name of the detected operating system.
+##    - DETECTED_ARCH:     The detected bit-depth of the host system.
+##    - NUM_CORES:         The detected available processor cores amount.
+##    - GENERATOR:         The detected generator candidate.
 include(cmakehelpers/detect_generator.cmake)
 
-message(STATUS "Build Type:    Release (optimized build)")
+## @section config CMake Configuration
+## @brief          Runs cmake to generate platform-specific build files
+message(STATUS "Build Type:    ${CMAKE_BUILD_TYPE}")
 message(STATUS "Build Dir:     ${BUILD_DIR}/")
 message(STATUS "Executable:    ${EXE_PATH}")
+message("======= CMake Configuration Phase =============================================")
 
-################################################################################
-## @name CMake Configuration Phase
-## @brief Configure the project build system from CMakeLists.txt
-################################################################################
-message("================================ CONFIGURATION PHASE ==========================")
-
-## @section config CMake Configuration
-## @brief Runs cmake to generate platform-specific build files
-
-## @var CONF_ARGS
+## @var   CONF_ARGS
 ## @brief Arguments passed to cmake configuration
-## Includes: source directory (-S .), build directory (-B), build type, executable name
-
-set(CONF_ARGS -S . -B ${BUILD_DIR} -DCMAKE_BUILD_TYPE=Release -DEXE_NAME=${EXE_NAME})
-
-## @brief Append generator argument if one was automatically selected
+##        Includes: build directory (-B), build type, executable name
+##        Append: generator argument if one was automatically selected
+set(CONF_ARGS -B ${BUILD_DIR} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DEXE_NAME=${EXE_NAME})
 if(NOT "${GENERATOR}" STREQUAL "")
     list(APPEND CONF_ARGS -G "${GENERATOR}")
 endif()
 
 ## @brief Execute CMake configuration
-execute_process(
-    COMMAND ${CMAKE_COMMAND} ${CONF_ARGS} 
-    RESULT_VARIABLE CONFIG_RESULT
-)
+execute_process( COMMAND ${CMAKE_COMMAND} ${CONF_ARGS} RESULT_VARIABLE CONFIG_RESULT)
 
 ## @brief Check configuration result and abort on failure with helpful diagnostics
-if(NOT CONFIG_RESULT EQUAL 0) 
-    message(FATAL_ERROR "CMAKE CONFIGURATION FAILED
-    
-This likely means:
-- Your C/C++ compiler is not in the system PATH
-- CMake could not find the compiler for the selected generator
-- There's an error in your CMakeLists.txt file
-
-Please ensure you have a compatible compiler installed:
-- Windows: Visual Studio, GCC (MinGW), or Clang
-- Linux: GCC or Clang
-- macOS: Xcode Command Line Tools (clang)") 
+if(NOT CONFIG_RESULT EQUAL 0)
+    message(FATAL_ERROR
+"CMAKE CONFIGURATION FAILED
+ This likely means:
+ - Your C/C++ compiler is not in the system PATH
+ - CMake could not find the compiler for the selected generator
+ - There's an error in your CMakeLists.txt file
+ Please ensure you have a compatible working compiler installed:
+ - Windows: Visual Studio, GCC (MinGW), or Clang
+ - Linux: GCC or Clang
+ - macOS: Xcode Command Line Tools (clang)")
 endif()
-
 message(STATUS "Configuration completed successfully")
 
-################################################################################
-## @name CMake Build Phase
-## @brief Compile the project using all available CPU cores
-################################################################################
-
-message("================================ BUILD PHASE ==================================")
-
-## @section build_exec Build Execution with Parallel Compilation
-## @brief Compiles the project using all detected CPU cores
-## The --parallel flag is critical for utilizing multi-core systems
+## @section build_exec Build with Parallel Compilation
+## @brief              Compiles the project using all detected CPU cores
+##                     The --parallel flag is critical for utilizing multi-core systems
+message("======= CMake Parallel Build Phase ============================================")
 
 ## @brief Validate core count and ensure minimum of 1
 if(NOT NUM_CORES GREATER_EQUAL 1)
@@ -146,53 +139,32 @@ endif()
 
 ## @var   BUILD_COMMAND_ARGS
 ## @brief Arguments for cmake --build command
-set(BUILD_COMMAND_ARGS --build ${BUILD_DIR} --config Release --parallel ${NUM_CORES})
-
-## @brief Execute the build with parallel compilation across all CPU cores
-## @note Build progress and compiler output is displayed in real-time
+set(BUILD_COMMAND_ARGS --build ${BUILD_DIR} --config ${CMAKE_BUILD_TYPE} --parallel ${NUM_CORES})
 message(STATUS "Building with ${NUM_CORES} parallel cores...")
 
-execute_process(
-    COMMAND ${CMAKE_COMMAND} ${BUILD_COMMAND_ARGS}
-    RESULT_VARIABLE BUILD_RESULT
-)
+## @brief Execute the build with parallel compilation across all CPU cores
+## @note  Build progress and compiler output is displayed in real-time
+execute_process( COMMAND ${CMAKE_COMMAND} ${BUILD_COMMAND_ARGS} RESULT_VARIABLE BUILD_RESULT)
 
-## @brief Check build result and abort on failure with helpful diagnostics
+## @brief Check build result and abort on failure
 if(NOT BUILD_RESULT EQUAL 0) 
-    message(FATAL_ERROR "BUILD FAILED
-
-The compilation encountered errors. Check the output above for details.
-Common issues:
-- Missing header files or dependencies
-- Syntax errors in source code
-- Incompatible compiler flags or settings") 
+    message(FATAL_ERROR "BUILD FAILED with BUILD_RESULT ${BUILD_RESULT}")
 endif()
-
 message(STATUS "Build completed successfully using all ${NUM_CORES} CPU cores")
 
-################################################################################
-## @name Executable Location and Verification
-## @brief Determine expected executable location based on platform
-################################################################################
-
-message("================================ EXECUTION PHASE ==============================")
-
-
+## @section bin_exec Executable Location and Verification
+## @brief            Verify expected executable location and run it
+message("======= Binary Executable Running Phase =======================================")
 message(STATUS "Looking for executable at: ${EXE_PATH}")
 
 ## @brief Verify executable exists before attempting execution
 if(EXISTS ${EXE_PATH})
     message(STATUS "Executable found, launching...")
-    message("================================================")
-    
+    message("===============================================================================")
     ## @section exec_run Program Execution
     ## @brief Runs the compiled executable and captures exit code
-    execute_process(
-        COMMAND ${EXE_PATH}
-        RESULT_VARIABLE RUN_RESULT
-    )
-    
-    message("================================================")
+    execute_process( COMMAND ${EXE_PATH} RESULT_VARIABLE RUN_RESULT)
+    message("===============================================================================")
     
     ## @brief Report execution status
     if(RUN_RESULT EQUAL 0)
@@ -201,10 +173,8 @@ if(EXISTS ${EXE_PATH})
         message(WARNING "Application exited with code: ${RUN_RESULT}")
     endif()
 else()
-    message(FATAL_ERROR "EXECUTABLE NOT FOUND at: ${EXE_PATH}
-
-This usually means:
-- The build failed silently (check build output)
-- The executable name is incorrect (check EXE_NAME variable)
-- The project's CMakeLists.txt does not create an executable target")
+    message(FATAL_ERROR "EXECUTABLE NOT FOUND at: ${EXE_PATH}")
 endif()
+
+message("Thanks for using build_and_run_project.cmake script!")
+message("")

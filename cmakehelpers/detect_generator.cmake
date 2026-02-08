@@ -16,6 +16,10 @@
 ## include(detect_generator.cmake) 
 ## # OR
 ## cmake -P detect_generator.cmake
+##
+## @author  Calileus
+## @version 1.0
+## @date    2026-02-08
 
 cmake_minimum_required(VERSION 3.28)
 
@@ -65,7 +69,7 @@ find_program(MAKE_PATH mingw32-make)
 ##                              Selection priority: MinGW Makefiles > Ninja > System Default
 if(CMAKE_HOST_WIN32 AND GCC_PATH AND MAKE_PATH)
     set(GENERATOR "MinGW Makefiles")
-else if(NINJA_PATH)
+elseif(NINJA_PATH)
     set(GENERATOR "Ninja")
 else()
     set(GENERATOR "")
@@ -73,8 +77,8 @@ endif()
 
 ## @section summary Detection Summary
 ## @brief           Final report showing detected configuration.
+message("")
 message("======= Build Platform and System Architecture Detection ======================")
 message(STATUS "Platform:      ${DETECTED_PLATFORM} (${DETECTED_ARCH})")
 message(STATUS "Generator:     ${GENERATOR}")
 message(STATUS "CPU Cores:     ${NUM_CORES}")
-message("================================================================================")
