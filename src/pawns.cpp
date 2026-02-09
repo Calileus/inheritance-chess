@@ -1,5 +1,5 @@
 /// @file      pawns.cpp
-/// @author    Calileus (https://github.com/Calileus/inheritance-chess)
+/// @author    Calileus (https://github.com/ObsidianHonorCoders/inheritance-chess)
 /// @brief     Implementation of the Pawn chess piece class.
 /// @details   Provides Pawn-specific functionality and move calculation.
 ///            Currently serves as a placeholder for future pawn movement logic.

@@ -1,5 +1,5 @@
 /// @file      rook.cpp
-/// @author    Calileus (https://github.com/Calileus/inheritance-chess)
+/// @author    Calileus (https://github.com/ObsidianHonorCoders/inheritance-chess)
 /// @brief     Implementation of the Rook chess piece class.
 /// @details   Provides Rook-specific functionality and move calculation.
 ///            Currently serves as a placeholder for future rook movement logic.

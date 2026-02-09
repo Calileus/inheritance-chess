@@ -1,5 +1,5 @@
 /// @file      queen.cpp
-/// @author    Calileus (https://github.com/Calileus/inheritance-chess)
+/// @author    Calileus (https://github.com/ObsidianHonorCoders/inheritance-chess)
 /// @brief     Implementation of the Queen chess piece class.
 /// @details   Provides Queen-specific functionality and move calculation.
 ///            Currently serves as a placeholder for future queen movement logic.

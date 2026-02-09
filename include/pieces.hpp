@@ -1,5 +1,5 @@
 /// @file      pieces.hpp
-/// @author    Calileus (https://github.com/Calileus/inheritance-chess)
+/// @author    Calileus (https://github.com/ObsidianHonorCoders/inheritance-chess)
 /// @brief     Base class for all chess pieces using polymorphism.
 /// @details   Defines the abstract Piece (piece) class that serves as the base
 ///            for all specific piece types in the chess engine.

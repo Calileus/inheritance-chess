@@ -1,5 +1,5 @@
 /// @file      king.cpp
-/// @author    Calileus (https://github.com/Calileus/inheritance-chess)
+/// @author    Calileus (https://github.com/ObsidianHonorCoders/inheritance-chess)
 /// @brief     Implementation of the King chess piece class.
 /// @details   Provides King-specific functionality and move calculation.
 ///            Currently serves as a placeholder for future king movement logic.

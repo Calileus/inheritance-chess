@@ -1,5 +1,5 @@
 /// @file      common.hpp
-/// @author    Calileus (https://github.com/Calileus/inheritance-chess)
+/// @author    Calileus (https://github.com/ObsidianHonorCoders/inheritance-chess)
 /// @brief     Common types and enumerations for the Chess Engine.
 /// @details   Defines shared enumerations for piece colors, piece types, and position
 ///            structures used throughout the inheritance-chess engine.

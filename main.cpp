@@ -1,5 +1,5 @@
 /// @file      main.cpp
-/// @author    Calileus (https://github.com/Calileus/inheritance-chess)
+/// @author    Calileus (https://github.com/ObsidianHonorCoders/inheritance-chess)
 /// @brief     Entry point for the Inheritance Chess Engine application.
 /// @details   Demonstrates basic chess engine functionality including board setup,
 ///            piece creation, and console-based board display using C++ inheritance

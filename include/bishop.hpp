@@ -1,5 +1,5 @@
 /// @file      bishop.hpp
-/// @author    Calileus (https://github.com/Calileus/inheritance-chess)
+/// @author    Calileus (https://github.com/ObsidianHonorCoders/inheritance-chess)
 /// @brief     Bishop piece implementation for the chess engine.
 /// @details   Defines the Bishop class that inherits from Piece and implements
 ///            bishop-specific movement rules for the chess game.

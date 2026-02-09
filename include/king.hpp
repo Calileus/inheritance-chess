@@ -1,5 +1,5 @@
 /// @file      king.hpp
-/// @author    Calileus (https://github.com/Calileus/inheritance-chess)
+/// @author    Calileus (https://github.com/ObsidianHonorCoders/inheritance-chess)
 /// @brief     King piece implementation for the chess engine.
 /// @details   Defines the King class that inherits from Piece and implements
 ///            king-specific movement rules for the chess game.

@@ -1,5 +1,5 @@
 /// @file      bishop.cpp
-/// @author    Calileus (https://github.com/Calileus/inheritance-chess)
+/// @author    Calileus (https://github.com/ObsidianHonorCoders/inheritance-chess)
 /// @brief     Implementation of the Bishop chess piece class.
 /// @details   Provides Bishop-specific functionality and move calculation.
 ///            Currently serves as a placeholder for future bishop movement logic.

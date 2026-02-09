@@ -1,5 +1,5 @@
 /// @file      board.hpp
-/// @author    Calileus (https://github.com/Calileus/inheritance-chess)
+/// @author    Calileus (https://github.com/ObsidianHonorCoders/inheritance-chess)
 /// @brief     Chess board management and console display.
 /// @details   Defines the Board class that manages chess pieces, board state,
 ///            and provides console-based visualization.

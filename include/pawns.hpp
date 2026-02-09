@@ -1,5 +1,5 @@
 /// @file      pawns.hpp
-/// @author    Calileus (https://github.com/Calileus/inheritance-chess)
+/// @author    Calileus (https://github.com/ObsidianHonorCoders/inheritance-chess)
 /// @brief     Pawn piece implementation for the chess engine.
 /// @details   Defines the Pawn class that inherits from Piece and implements
 ///            pawn-specific movement rules for the chess game.

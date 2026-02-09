@@ -1,5 +1,5 @@
 /// @file      pieces.cpp
-/// @author    Calileus (https://github.com/Calileus/inheritance-chess)
+/// @author    Calileus (https://github.com/ObsidianHonorCoders/inheritance-chess)
 /// @brief     Implementation of the base Piece (chess piece) class.
 /// @details   Provides implementations for color checking, position management,
 ///            and piece representation functionality.

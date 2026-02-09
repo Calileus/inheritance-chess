@@ -1,5 +1,5 @@
 /// @file      knight.hpp
-/// @author    Calileus (https://github.com/Calileus/inheritance-chess)
+/// @author    Calileus (https://github.com/ObsidianHonorCoders/inheritance-chess)
 /// @brief     Knight piece implementation for the chess engine.
 /// @details   Defines the Knight class that inherits from Piece and implements
 ///            knight-specific movement rules for the chess game.

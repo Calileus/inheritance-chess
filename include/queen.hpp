@@ -1,5 +1,5 @@
 /// @file      queen.hpp
-/// @author    Calileus (https://github.com/Calileus/inheritance-chess)
+/// @author    Calileus (https://github.com/ObsidianHonorCoders/inheritance-chess)
 /// @brief     Queen piece implementation for the chess engine.
 /// @details   Defines the Queen class that inherits from Piece and implements
 ///            queen-specific movement rules for the chess game.

@@ -1,5 +1,5 @@
 /// @file      board.cpp
-/// @author    Calileus (https://github.com/Calileus/inheritance-chess)
+/// @author    Calileus (https://github.com/ObsidianHonorCoders/inheritance-chess)
 /// @brief     Implementation of the Board class for chess game state management.
 /// @details   Provides implementation for piece management, grid updates, and
 ///            console-based board visualization using ASCII art.
