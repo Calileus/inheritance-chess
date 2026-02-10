@@ -68,6 +68,11 @@ set(EXE_NAME "ichess_runner")
 ## @details All build files and the executable will be placed here
 set(BUILD_DIR "build")
 
+## @var     BUILD_TESTS
+## @brief   Option to build and run tests
+## @details Set to ON to build and run tests
+option(BUILD_TESTS "Build and run tests" ON)
+
 ## @section exe_location Executable Path Resolution
 ## @brief                Constructs the path to the compiled executable
 ##                       Accounts for platform differences: .exe on Windows, bare name on Unix
@@ -151,6 +156,21 @@ if(NOT BUILD_RESULT EQUAL 0)
     message(FATAL_ERROR "BUILD FAILED with BUILD_RESULT ${BUILD_RESULT}")
 endif()
 message(STATUS "Build completed successfully using all ${NUM_CORES} CPU cores")
+
+## @section test_exec Test Executable Location and Verification
+## @brief             Verify expected executable location and run it
+message("======= Google Testing Suit Running Phase =====================================")
+if(BUILD_TESTS)
+    message("Running tests...")
+    execute_process( COMMAND ${BUILD_DIR}/tests/test_${EXE_NAME} RESULT_VARIABLE TEST_RESULT )
+    if(TEST_RESULT EQUAL 0)
+        message("All tests passed!")
+    else()
+        message(WARNING "Tests failed!")
+    endif()
+else()
+    message("Tests disabled, skipping test execution...")
+endif()
 
 ## @section bin_exec Executable Location and Verification
 ## @brief            Verify expected executable location and run it
