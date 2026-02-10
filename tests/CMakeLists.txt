@@ -5,8 +5,6 @@ add_executable(test_${EXE_NAME} ${TEST_SOURCES})
 target_link_libraries(test_${EXE_NAME} 
     gtest
     gtest_main
-    gmock
-    gmock_main
 )
 
 target_include_directories(test_${EXE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)

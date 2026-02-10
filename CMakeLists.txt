@@ -19,5 +19,4 @@ add_executable(${EXE_NAME})
 target_sources(${EXE_NAME} PRIVATE ${SOURCES} main.cpp)
 
 enable_testing()
-target_link_libraries(${EXE_NAME} GTest::gtest GTest::gtest_main)
 add_subdirectory(tests)

@@ -103,6 +103,7 @@ include(cmakehelpers/detect_generator.cmake)
 message(STATUS "Build Type:    ${CMAKE_BUILD_TYPE}")
 message(STATUS "Build Dir:     ${BUILD_DIR}/")
 message(STATUS "Executable:    ${EXE_PATH}")
+message("")
 message("======= CMake Configuration Phase =============================================")
 
 ## @var   CONF_ARGS
@@ -135,6 +136,7 @@ message(STATUS "Configuration completed successfully")
 ## @section build_exec Build with Parallel Compilation
 ## @brief              Compiles the project using all detected CPU cores
 ##                     The --parallel flag is critical for utilizing multi-core systems
+message("")
 message("======= CMake Parallel Build Phase ============================================")
 
 ## @brief Validate core count and ensure minimum of 1
@@ -159,9 +161,10 @@ message(STATUS "Build completed successfully using all ${NUM_CORES} CPU cores")
 
 ## @section test_exec Test Executable Location and Verification
 ## @brief             Verify expected executable location and run it
+message("")
 message("======= Google Testing Suit Running Phase =====================================")
 if(BUILD_TESTS)
-    message("Running tests...")
+    message("Starting tests...")
     execute_process( COMMAND ${BUILD_DIR}/tests/test_${EXE_NAME} RESULT_VARIABLE TEST_RESULT )
     if(TEST_RESULT EQUAL 0)
         message("All tests passed!")
@@ -174,6 +177,7 @@ endif()
 
 ## @section bin_exec Executable Location and Verification
 ## @brief            Verify expected executable location and run it
+message("")
 message("======= Binary Executable Running Phase =======================================")
 message(STATUS "Looking for executable at: ${EXE_PATH}")
 
