@@ -1,11 +1,15 @@
-/// @file      board.cpp
-/// @author    Calileus (https://github.com/Calileus/inheritance-chess)
-/// @brief     Implementation of the Board class for chess game state management.
-/// @details   Provides implementation for piece management, grid updates, and
-///            console-based board visualization using ASCII art.
-/// @version   1.0
-/// @date      2026-01-22
-/// @copyright MIT License - see LICENSE file for details
+/// @file         board.cpp
+/// @brief        Implementation of the Board class for chess game state management.
+/// @project      Inheritance Chess
+/// @organization Obsidian Honor Coders
+/// @author       Calileus
+/// @details      Provides implementation for piece management, grid updates, and
+///               console-based board visualization using ASCII art.
+/// @date         2026-01-22
+/// @copyright    2026 Obsidian Honor Coders
+/// @license      Apache License 2.0 - http://www.apache.org/licenses/LICENSE-2.0
+/// @note         Licensed under the Apache License, Version 2.0 (the "License");
+///               you may not use this file except in compliance with the License.
 
 #include "board.hpp"
 #include "pawns.hpp"
