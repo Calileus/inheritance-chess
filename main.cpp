@@ -18,7 +18,7 @@
 
 #include "board.hpp"
 
-/// @brief   Main entry point for the Inheritance ChessEngine.
+/// @brief   Main entry point for the Inheritance Chess Engine.
 /// @return  Exit status code (0 for success).
 /// @details Initializes the chess board with the standard starting position
 ///          and displays it to the console.
