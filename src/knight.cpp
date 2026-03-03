@@ -11,6 +11,7 @@
 
 void Knight::available_moves(Piece::PositionList&       p,
                              const Piece::PositionList& other_p,
-                             const Piece::ColorList&    other_c) const
+                             const Piece::ColorList&    other_c,
+                             const Properties&          props) const
 {
 }

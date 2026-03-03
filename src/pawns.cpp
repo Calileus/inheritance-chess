@@ -19,6 +19,7 @@
 /// @details    This overload provides piece positions and colors separately for move calculation.
 void Pawn::available_moves(Piece::PositionList&       p,
                            const Piece::PositionList& other_p,
-                           const Piece::ColorList&    other_c) const
+                           const Piece::ColorList&    other_c,
+                           const Properties&          props) const
 {
 }
