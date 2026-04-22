@@ -12,22 +12,23 @@
 
 using namespace Chess;
 
-class ValidationTest : public ::testing::Test {
-protected:
+class ValidationTest : public ::testing::Test
+{
+  protected:
     ChessBoardManager manager;
-    Grid grid;
-    
-    void SetUp() override {
-        grid.initialize_standard_position();
-    }
+    Grid              grid;
+
+    void SetUp() override { grid.initialize_standard_position(); }
 };
 
-TEST_F(ValidationTest, CheckmateDetection) {
-    // TODO: Setup checkmate position and test
-    // EXPECT_TRUE(manager.is_checkmate(grid, Color::BLACK));
+TEST_F(ValidationTest, CheckmateDetection)
+{
+  // TODO: Setup checkmate position and test
+  // EXPECT_TRUE(manager.is_checkmate(grid, Color::BLACK));
 }
 
-TEST_F(ValidationTest, StalemateDetection) {
-    // TODO: Setup stalemate position and test
-    // EXPECT_TRUE(manager.is_stalemate(grid, Color::BLACK));
+TEST_F(ValidationTest, StalemateDetection)
+{
+  // TODO: Setup stalemate position and test
+  // EXPECT_TRUE(manager.is_stalemate(grid, Color::BLACK));
 }

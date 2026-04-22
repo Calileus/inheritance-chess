@@ -12,23 +12,24 @@
 
 using namespace Chess;
 
-class BoardManagerTest : public ::testing::Test {
-protected:
+class BoardManagerTest : public ::testing::Test
+{
+  protected:
     ChessBoardManager manager;
-    Grid grid;
-    
-    void SetUp() override {
-        grid.initialize_standard_position();
-    }
+    Grid              grid;
+
+    void SetUp() override { grid.initialize_standard_position(); }
 };
 
-TEST_F(BoardManagerTest, InitialPositionNotInCheck) {
-    EXPECT_FALSE(manager.is_white_king_in_check(grid));
-    EXPECT_FALSE(manager.is_black_king_in_check(grid));
+TEST_F(BoardManagerTest, InitialPositionNotInCheck)
+{
+  EXPECT_FALSE(manager.is_white_king_in_check(grid));
+  EXPECT_FALSE(manager.is_black_king_in_check(grid));
 }
 
-TEST_F(BoardManagerTest, ValidateMoveInitialPawn) {
-    Move pawn_move(Position(4, 1), Position(4, 3));
-    // TODO: Once implementation is complete
-    // EXPECT_TRUE(manager.validate_move(grid, pawn_move));
+TEST_F(BoardManagerTest, ValidateMoveInitialPawn)
+{
+  Move pawn_move(Position(4, 1), Position(4, 3));
+  // TODO: Once implementation is complete
+  // EXPECT_TRUE(manager.validate_move(grid, pawn_move));
 }

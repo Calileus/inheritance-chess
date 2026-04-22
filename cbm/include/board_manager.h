@@ -17,44 +17,46 @@
 #include <vector>
 #include <memory>
 
-namespace Chess {
+namespace Chess
+{
 
-/// @class   ChessBoardManager
-/// @brief   Manages chess board state and enforces game rules.
-/// @details The ChessBoardManager acts as a referee, enforcing the higher-level
-///          rules of chess including check detection, move validation, and
-///          game end condition detection.
-class ChessBoardManager {
-  public:
-    /// @brief Constructor.
-    ChessBoardManager() = default;
-    
-    /// @brief Check if white king is in check.
-    bool is_white_king_in_check(const Grid& grid) const;
-    
-    /// @brief Check if black king is in check.
-    bool is_black_king_in_check(const Grid& grid) const;
-    
-    /// @brief Check if current position is a draw.
-    bool is_draw(const Grid& grid, Color color_turn) const;
-    
-    /// @brief Validate if a move is legal (doesn't leave king in check).
-    bool validate_move(const Grid& grid, const Move& move) const;
-    
-    /// @brief Check if position is checkmate.
-    bool is_checkmate(const Grid& grid, Color color) const;
-    
-    /// @brief Check if position is stalemate.
-    bool is_stalemate(const Grid& grid, Color color) const;
-    
-    /// @brief Check if a specific king is in check on the board.
-    bool is_king_in_check(const Grid& grid, Color king_color) const;
-    
-  private:
-    Grid current_board_;   ///< Current game board state
-    Grid validation_grid_; ///< Validation grid for move testing
-};
+  /// @class   ChessBoardManager
+  /// @brief   Manages chess board state and enforces game rules.
+  /// @details The ChessBoardManager acts as a referee, enforcing the higher-level
+  ///          rules of chess including check detection, move validation, and
+  ///          game end condition detection.
+  class ChessBoardManager
+  {
+    public:
+      /// @brief Constructor.
+      ChessBoardManager() = default;
+
+      /// @brief Check if white king is in check.
+      bool is_white_king_in_check(const Grid& grid) const;
+
+      /// @brief Check if black king is in check.
+      bool is_black_king_in_check(const Grid& grid) const;
+
+      /// @brief Check if current position is a draw.
+      bool is_draw(const Grid& grid, Color color_turn) const;
+
+      /// @brief Validate if a move is legal (doesn't leave king in check).
+      bool validate_move(const Grid& grid, const Move& move) const;
+
+      /// @brief Check if position is checkmate.
+      bool is_checkmate(const Grid& grid, Color color) const;
+
+      /// @brief Check if position is stalemate.
+      bool is_stalemate(const Grid& grid, Color color) const;
+
+      /// @brief Check if a specific king is in check on the board.
+      bool is_king_in_check(const Grid& grid, Color king_color) const;
+
+    private:
+      Grid current_board_;   ///< Current game board state
+      Grid validation_grid_; ///< Validation grid for move testing
+  };
 
 } // namespace Chess
 
-#endif  // ICHESS_CBM_BOARD_MANAGER
+#endif // ICHESS_CBM_BOARD_MANAGER

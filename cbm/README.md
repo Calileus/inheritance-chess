@@ -1,11 +1,3 @@
-/// @file      README.md
-/// @namespace Chess
-/// @brief     Chess Board Manager (CBM) Module Documentation.
-/// @author    Calileus
-/// @date      2026-01-22
-/// @copyright 2026 Obsidian Honor Coders. Licensed under Apache 2.0.
-/// @see       https://github.com/ObsidianHonorCoders/inheritance-chess
-
 # CBM: Chess Board Manager
 
 ## Overview
