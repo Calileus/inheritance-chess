@@ -5,16 +5,11 @@ add_definitions(-DUNICODE -D_UNICODE)
 
 project(inheritance_chess_project)
 
-# Legacy support for existing structure (leveraging existing patterns)
-include_directories("include")
-file(GLOB LEGACY_SOURCES "src/*.cpp")
-add_executable(${EXE_NAME})
-target_sources(${EXE_NAME} PRIVATE ${LEGACY_SOURCES} main.cpp)
-
 # New modular CCI component support
 include_directories("cci/include")
 file(GLOB CCI_SOURCES "cci/src/*.cpp")
-target_sources(${EXE_NAME} PRIVATE ${CCI_SOURCES})
+add_executable(${EXE_NAME})
+target_sources(${EXE_NAME} PRIVATE ${CCI_SOURCES} main.cpp)
 
 # CPL component support (Phase 2) - now active
 include_directories("cpl/include")

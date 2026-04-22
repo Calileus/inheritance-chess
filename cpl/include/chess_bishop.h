@@ -11,7 +11,7 @@
 #ifndef ICHESS_CPL_CHESS_BISHOP
 #define ICHESS_CPL_CHESS_BISHOP
 
-#include "../cci/include/grid.h"
+#include "grid.h"
 #include <vector>
 
 namespace Chess

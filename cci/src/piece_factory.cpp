@@ -9,12 +9,12 @@
 ///            adapted from existing Piece creation patterns.
 
 #include "grid.h"
-#include "../cpl/include/chess_pawn.h"
-#include "../cpl/include/chess_knight.h"
-#include "../cpl/include/chess_bishop.h"
-#include "../cpl/include/chess_rook.h"
-#include "../cpl/include/chess_queen.h"
-#include "../cpl/include/chess_king.h"
+#include "chess_pawn.h"
+#include "chess_knight.h"
+#include "chess_bishop.h"
+#include "chess_rook.h"
+#include "chess_queen.h"
+#include "chess_king.h"
 #include <stdexcept>
 
 namespace Chess

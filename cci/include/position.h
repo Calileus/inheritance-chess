@@ -13,6 +13,7 @@
 
 #include <cstdint>
 #include <functional>
+#include <string>
 
 namespace Chess
 {
@@ -53,6 +54,17 @@ namespace Chess
         return rank < other.rank;
       }
   };
+
+  /// @brief Convert Position to algebraic notation (e.g., "e2", "a8").
+  /// @param pos Position to convert.
+  /// @return String representation in algebraic notation.
+  std::string position_to_algebraic(const Position& pos);
+
+  /// @brief Convert algebraic notation to Position.
+  /// @param algebraic Algebraic notation (e.g., "e2", "a8").
+  /// @return Position object.
+  /// @throws std::invalid_argument if algebraic notation is invalid.
+  Position algebraic_to_position(const std::string& algebraic);
 
 } // namespace Chess
 

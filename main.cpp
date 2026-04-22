@@ -12,15 +12,15 @@
 #include <string>
 #include <memory>
 
-#include "board.hpp"
+#include "cci/include/grid.h"
 
 /// @brief   Main entry point for the Inheritance Chess Engine.
 /// @return  Exit status code (0 for success).
 /// @details Initializes the chess board with the standard starting position.
 int main()
 {
-  Board chessBoard;
-  chessBoard.initializeStandardSetup();
+  Chess::Grid chessGrid;
+  chessGrid.initialize_standard_position();
 
   std::cout << "====================================" << std::endl;
   std::cout << "|  Inheritance Chess Engine v0.0   |" << std::endl;

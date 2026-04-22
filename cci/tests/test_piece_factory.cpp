@@ -27,15 +27,29 @@
 class PieceFactoryTest : public ::testing::Test
 {
   protected:
+    /// @brief Test positions for piece creation.
+    Chess::Position test_pos_a1;
+    Chess::Position test_pos_b1;
+    Chess::Position test_pos_c1;
+    Chess::Position test_pos_d1;
+    Chess::Position test_pos_e1;
+    Chess::Position test_pos_e2;
+    Chess::Position test_pos_e7;
+    Chess::Position test_pos_h8;
+    Chess::Position test_pos_center;
     /// @brief   Set up test environment before each test.
     /// @details Initializes test positions and parameters.
     ///          Adapted from existing PawnTest SetUp() pattern.
     void SetUp() override
     {
       // Common test positions (adapted from existing test patterns)
-      test_pos_e2 = Chess::Position(4, 1);  // e2
-      test_pos_e7 = Chess::Position(4, 6);  // e7
       test_pos_a1 = Chess::Position(0, 0);   // a1
+      test_pos_b1 = Chess::Position(1, 0);   // b1
+      test_pos_c1 = Chess::Position(2, 0);   // c1
+      test_pos_d1 = Chess::Position(3, 0);   // d1
+      test_pos_e1 = Chess::Position(4, 0);   // e1
+      test_pos_e2 = Chess::Position(4, 1);   // e2
+      test_pos_e7 = Chess::Position(4, 6);   // e7
       test_pos_h8 = Chess::Position(7, 7);   // h8
       test_pos_center = Chess::Position(4, 4); // e5
     }
@@ -47,14 +61,6 @@ class PieceFactoryTest : public ::testing::Test
       // Smart pointers will automatically clean up
       // No manual cleanup needed due to RAII principles
     }
-
-    /// @brief   Common test positions.
-    /// @details Adapted from existing test position patterns.
-    Chess::Position test_pos_e2;
-    Chess::Position test_pos_e7;
-    Chess::Position test_pos_a1;
-    Chess::Position test_pos_h8;
-    Chess::Position test_pos_center;
 };
 
 /// @test   Verify factory throws exception for unimplemented pieces.

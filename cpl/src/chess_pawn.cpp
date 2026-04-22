@@ -140,7 +140,7 @@ namespace Chess
       {
           size_t index = std::distance(other_positions.begin(), it);
           Color piece_color = other_colors[index];
-          return (piece_color != color_ && piece_color != Color::NONE);
+          return (piece_color != color_);
       }
       return false;
   }

@@ -23,7 +23,10 @@ namespace Chess
 
   // Forward declarations for polymorphic piece interface
   class ChessPiece;
-  
+
+  /// @brief Forward declaration of Grid class for use in ChessPiece interface.
+  class Grid;
+
   /// @class ChessPiece::List
   /// @brief A vector of unique pointers to chess pieces.
   /// @note  This container owns the memory. Objects are automatically managed
@@ -44,22 +47,22 @@ namespace Chess
   ///          adapted from the existing Piece class to work with CCI namespace.
   class ChessPiece
   {
-  public:
+    public:
       /// @brief Virtual destructor for proper cleanup in derived classes.
       virtual ~ChessPiece() = default;
 
       /// @brief Get the type of the piece.
       virtual PieceType get_type() const = 0;
-      
+
       /// @brief Get the color of the piece.
       virtual Color get_color() const = 0;
-      
+
       /// @brief Get the current position of the piece.
       virtual Position get_position() const = 0;
-      
+
       /// @brief Set the position of the piece.
       virtual void set_position(const Position& pos) = 0;
-      
+
       /// @brief Get the character representation of the piece.
       virtual char get_representation() const = 0;
 
@@ -67,7 +70,7 @@ namespace Chess
       /// @param[out] moves Vector to be filled with valid move positions.
       /// @param[in] other Vector of unique pointers to all other pieces on the board.
       /// @param[in] grid Current grid state for move validation.
-      /// @details This method extracts positions and colors from the PieceList and calls 
+      /// @details This method extracts positions and colors from the PieceList and calls
       ///          the pure virtual overload. Adapted from existing Piece::available_moves.
       void available_moves(PositionList& moves, const PieceList& other, const Grid& grid) const;
 
@@ -78,10 +81,10 @@ namespace Chess
       /// @param[in] grid Current grid state for move validation.
       /// @note Must be implemented by derived classes for their specific movement rules.
       /// @details This is the primary method that derived classes must implement.
-      virtual void available_moves(PositionList& moves,
-                                 const PositionList& other_positions,
-                                 const ColorList& other_colors,
-                                 const Grid& grid) const = 0;
+      virtual void available_moves(PositionList&       moves,
+                                   const PositionList& other_positions,
+                                   const ColorList&    other_colors,
+                                   const Grid&         grid) const = 0;
   };
 
   /// @brief Factory function for creating chess pieces.
@@ -117,8 +120,9 @@ namespace Chess
       Color     current_turn = Color::WHITE; ///< Whose turn it is
       GameFlags flags;                       ///< Castling rights, en passant, halfmove/fullmove counters
 
-  private:
-      PieceList pieces_; ///< List of all pieces on the board (adapted from existing Board::pieces)
+    public:
+      /// @brief Initialize grid to standard starting position.
+      void initialize_standard_position();
 
       /// @brief Get piece at a specific position (if any).
       const std::optional<PieceProperties>& get_piece(const Position& pos) const
@@ -131,14 +135,18 @@ namespace Chess
         return board[pos.file][pos.rank];
       }
 
-      /// @brief Set piece at a specific position.
-      void set_piece(const Position& pos, const std::optional<PieceProperties>& piece)
+      /// @brief Check if a square is occupied.
+      bool is_occupied(const Position& pos) const
       {
-        if (pos.is_valid())
-        {
-          board[pos.file][pos.rank] = piece;
-        }
+        if (!pos.is_valid())
+          return false;
+        return board[pos.file][pos.rank].has_value();
       }
+
+      /**
+       * @brief Switch the current turn
+       */
+      void switch_turn() { current_turn = (current_turn == Color::WHITE) ? Color::BLACK : Color::WHITE; }
 
       /// @brief Clear a square (remove the piece).
       void clear_square(const Position& pos)
@@ -148,25 +156,6 @@ namespace Chess
           board[pos.file][pos.rank] = std::nullopt;
         }
       }
-
-      /// @brief Check if a square is occupied.
-      bool is_occupied(const Position& pos) const
-      {
-        if (!pos.is_valid())
-          return false;
-        return board[pos.file][pos.rank].has_value();
-      }
-
-      /// @brief Check if a square is attacked by a color (to be implemented by CBM).
-      bool is_square_attacked_by(const Position& pos, Color attacking_color) const;
-
-      /**
-       * @brief Switch the current turn
-       */
-      void switch_turn() { current_turn = (current_turn == Color::WHITE) ? Color::BLACK : Color::WHITE; }
-
-      /// @brief Initialize grid to standard starting position.
-      void initialize_standard_position();
 
       /// @brief Get all pieces on the board as a PieceList.
       /// @return Vector of unique pointers to all pieces on the board.
@@ -188,7 +177,7 @@ namespace Chess
       /// @return Raw pointer to piece at position, or nullptr if empty.
       /// @details Adapted from existing Board piece access patterns.
       ChessPiece* get_piece_at(const Position& pos);
-      
+
       /// @brief Get piece at a specific position (const version).
       /// @param pos Position to check.
       /// @return Const raw pointer to piece at position, or nullptr if empty.
@@ -197,6 +186,21 @@ namespace Chess
       /// @brief Convert grid state to PieceProperties array for compatibility.
       /// @details Bridges the gap between PieceList and grid representation.
       void update_piece_properties();
+
+    private:
+      PieceList pieces_; ///< List of all pieces on the board (adapted from existing Board::pieces)
+
+      /// @brief Set piece at a specific position.
+      void set_piece(const Position& pos, const std::optional<PieceProperties>& piece)
+      {
+        if (pos.is_valid())
+        {
+          board[pos.file][pos.rank] = piece;
+        }
+      }
+
+      /// @brief Check if a square is attacked by a color (to be implemented by CBM).
+      bool is_square_attacked_by(const Position& pos, Color attacking_color) const;
   };
 
 } // namespace Chess

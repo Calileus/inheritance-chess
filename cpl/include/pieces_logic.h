@@ -12,8 +12,8 @@
 #ifndef ICHESS_CPL_PIECES_LOGIC
 #define ICHESS_CPL_PIECES_LOGIC
 
-#include "../cci/include/grid.h"
-#include "../cci/include/move.h"
+#include "grid.h"
+#include "move.h"
 #include <vector>
 #include <memory>
 

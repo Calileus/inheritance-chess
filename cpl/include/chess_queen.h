@@ -11,7 +11,7 @@
 #ifndef ICHESS_CPL_CHESS_QUEEN
 #define ICHESS_CPL_CHESS_QUEEN
 
-#include "../cci/include/grid.h"
+#include "grid.h"
 #include <vector>
 
 namespace Chess

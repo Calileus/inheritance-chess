@@ -14,15 +14,21 @@
 namespace Chess
 {
 
-  /// @brief Convert Position to algebraic notation (e.g., "a1", "h8").
+  /// @brief Convert Position to algebraic notation (e.g., "e2", "a8").
+  /// @param pos Position to convert.
+  /// @return String representation in algebraic notation.
   std::string position_to_algebraic(const Position& pos)
   {
     if (!pos.is_valid())
     {
-      return "??";
+      throw std::invalid_argument("Invalid position for conversion");
     }
+
+    // Convert file (0-7) to letter (a-h)
     char file_char = static_cast<char>('a' + pos.file);
+    // Convert rank (0-7) to number (1-8)
     char rank_char = static_cast<char>('1' + pos.rank);
+
     return std::string{file_char, rank_char};
   }
 

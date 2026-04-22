@@ -11,7 +11,7 @@
 #ifndef ICHESS_CPL_CHESS_KNIGHT
 #define ICHESS_CPL_CHESS_KNIGHT
 
-#include "../cci/include/grid.h"
+#include "grid.h"
 #include <vector>
 
 namespace Chess

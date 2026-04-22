@@ -13,27 +13,20 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-# Legacy test support (leveraging existing test patterns)
-file(GLOB LEGACY_TEST_SOURCES "./test_*.cpp")
-add_executable("test_${EXE_NAME}" ${LEGACY_TEST_SOURCES})
-target_link_libraries("test_${EXE_NAME}" gtest gtest_main gmock )
-target_include_directories("test_${EXE_NAME}" PRIVATE "${CMAKE_SOURCE_DIR}/include")
-file(GLOB LEGACY_PROJECT_SOURCES "${CMAKE_SOURCE_DIR}/src/*.cpp")
-target_sources("test_${EXE_NAME}" PRIVATE ${LEGACY_PROJECT_SOURCES})
-
-# New CCI test support (adapted from existing test structure)
+# New modular test support (CCI + CPL)
 file(GLOB CCI_TEST_SOURCES "../cci/tests/test_*.cpp")
-target_sources("test_${EXE_NAME}" PRIVATE ${CCI_TEST_SOURCES})
-target_include_directories("test_${EXE_NAME}" PRIVATE "${CMAKE_SOURCE_DIR}/cci/include")
-file(GLOB CCI_PROJECT_SOURCES "${CMAKE_SOURCE_DIR}/cci/src/*.cpp")
-target_sources("test_${EXE_NAME}" PRIVATE ${CCI_PROJECT_SOURCES})
-
-# CPL component test support (Phase 2) - now active
 file(GLOB CPL_TEST_SOURCES "../cpl/tests/test_*.cpp")
-target_sources("test_${EXE_NAME}" PRIVATE ${CPL_TEST_SOURCES})
+add_executable("test_${EXE_NAME}" ${CCI_TEST_SOURCES} ${CPL_TEST_SOURCES})
+target_link_libraries("test_${EXE_NAME}" gtest gtest_main gmock )
+
+# Include directories for modular components
+target_include_directories("test_${EXE_NAME}" PRIVATE "${CMAKE_SOURCE_DIR}/cci/include")
 target_include_directories("test_${EXE_NAME}" PRIVATE "${CMAKE_SOURCE_DIR}/cpl/include")
+
+# Include source files for modular components
+file(GLOB CCI_PROJECT_SOURCES "${CMAKE_SOURCE_DIR}/cci/src/*.cpp")
 file(GLOB CPL_PROJECT_SOURCES "${CMAKE_SOURCE_DIR}/cpl/src/*.cpp")
-target_sources("test_${EXE_NAME}" PRIVATE ${CPL_PROJECT_SOURCES})
+target_sources("test_${EXE_NAME}" PRIVATE ${CCI_PROJECT_SOURCES} ${CPL_PROJECT_SOURCES})
 
 # Future modular component tests (Phase 2) - structure ready
 # file(GLOB CBM_TEST_SOURCES "../cbm/tests/test_*.cpp")
