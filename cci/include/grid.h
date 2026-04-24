@@ -193,6 +193,11 @@ namespace Chess
       /// @details Bridges the gap between PieceList and grid representation.
       void update_piece_properties();
 
+      /// @brief Set piece at position for test setup.
+      /// @param pos Position to place piece.
+      /// @param piece Piece properties to place.
+      void set_piece_for_test(const Position& pos, const std::optional<PieceProperties>& piece);
+
     private:
       std::vector<std::unique_ptr<ChessPiece>> pieces_; ///< List of all pieces on the board (adapted from existing Board::pieces)
 

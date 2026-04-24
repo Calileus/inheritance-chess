@@ -184,4 +184,9 @@ namespace Chess
     }
   }
 
+void Grid::set_piece_for_test(const Position& pos, const std::optional<PieceProperties>& piece)
+{
+  set_piece(pos, piece);
+}
+
 } // namespace Chess

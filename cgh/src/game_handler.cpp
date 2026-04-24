@@ -26,7 +26,7 @@ namespace Chess
     current_grid_.initialize_standard_position();
     session_.game_id = "game_" + std::to_string(std::time(nullptr));
     session_.move_history.clear();
-    session_.state = GameState::ONGOING;
+    session_.state      = GameState::ONGOING;
     session_.white_time = std::chrono::milliseconds(600000); // 10 minutes
     session_.black_time = std::chrono::milliseconds(600000); // 10 minutes
   }
@@ -40,7 +40,7 @@ namespace Chess
 
   bool ChessGameHandler::make_move(const std::string& algebraic_move)
   {
-    try 
+    try
     {
       Move move = translation_unit_->algebraic_to_move(algebraic_move, current_grid_);
       return make_move(move);
@@ -78,31 +78,57 @@ namespace Chess
     return true;
   }
 
-  std::string ChessGameHandler::get_current_fen() const 
-  { 
-    return translation_unit_->internal_to_fen(current_grid_); 
-  }
+  std::string ChessGameHandler::get_current_fen() const { return translation_unit_->internal_to_fen(current_grid_); }
 
-  std::vector<Move> ChessGameHandler::get_legal_moves() const
-  {
-    // Simple implementation - return empty for now
-    // TODO: Implement proper legal move generation
-    std::vector<Move> moves;
-    return moves;
-  }
+  std::vector<Move> ChessGameHandler::get_legal_moves() const { return get_legal_moves(current_grid_); }
 
   std::vector<Move> ChessGameHandler::get_legal_moves(const Grid& grid) const
   {
-    // Simple implementation - return empty for now
-    // TODO: Implement proper legal move generation
-    std::vector<Move> moves;
-    return moves;
+    std::vector<Move> legal_moves;
+
+    // Iterate through all squares on the board
+    for (int file = 0; file < 8; ++file)
+    {
+      for (int rank = 0; rank < 8; ++rank)
+      {
+        Position pos(file, rank);
+
+        // Check if square is occupied
+        if (!grid.is_occupied(pos))
+        {
+          continue;
+        }
+
+        const auto& piece = grid.get_piece(pos);
+        if (!piece.has_value())
+        {
+          continue;
+        }
+
+        // Only generate moves for the current player's pieces
+        if (piece->color != grid.current_turn)
+        {
+          continue;
+        }
+
+        // Get raw logical moves from pieces logic
+        auto raw_moves = pieces_logic_->list_raw_logical_moves(grid, pos);
+
+        // Filter through board manager to ensure moves are legal (don't leave king in check)
+        for (const auto& move : raw_moves)
+        {
+          if (board_manager_->validate_move(grid, move))
+          {
+            legal_moves.push_back(move);
+          }
+        }
+      }
+    }
+
+    return legal_moves;
   }
 
-  GameState ChessGameHandler::get_game_state() const 
-  { 
-    return session_.state; 
-  }
+  GameState ChessGameHandler::get_game_state() const { return session_.state; }
 
   void ChessGameHandler::start_timer(Color color)
   {
@@ -126,15 +152,15 @@ namespace Chess
     // Simple text display adapted from existing Board patterns
     std::cout << "\n  a b c d e f g h\n";
     std::cout << " +-----------------+\n";
-    
+
     for (int rank = 7; rank >= 0; --rank)
     {
       std::cout << rank + 1 << "|";
       for (int file = 0; file < 8; ++file)
       {
-        Position pos(file, rank);
+        Position    pos(file, rank);
         const auto& piece = current_grid_.get_piece(pos);
-        
+
         if (piece.has_value())
         {
           char piece_char = get_piece_display_char(piece->type, piece->color);
@@ -147,15 +173,12 @@ namespace Chess
       }
       std::cout << " |\n";
     }
-    
+
     std::cout << " +-----------------+\n";
     std::cout << "Turn: " << (current_grid_.current_turn == Color::WHITE ? "White" : "Black") << "\n";
   }
 
-  const Grid& ChessGameHandler::get_current_grid() const
-  {
-    return current_grid_;
-  }
+  const Grid& ChessGameHandler::get_current_grid() const { return current_grid_; }
 
   bool ChessGameHandler::execute_move_on_grid(const Move& move)
   {
@@ -186,16 +209,20 @@ namespace Chess
 
   bool ChessGameHandler::execute_regular_move(const Move& move)
   {
+    // Get piece at start position BEFORE clearing
+    auto piece = current_grid_.get_piece_at(move.start_pos);
+    if (!piece)
+    {
+      return false;
+    }
+    
     // Clear start position
     current_grid_.clear_square(move.start_pos);
     
     // Set piece at end position
-    auto piece = current_grid_.get_piece_at(move.start_pos);
-    if (piece)
-    {
-      // Update piece position in properties
-      piece->set_position(move.end_pos);
-    }
+    piece->set_position(move.end_pos);
+    current_grid_.set_piece_for_test(move.end_pos, 
+        Chess::PieceProperties{piece->get_type(), piece->get_color(), move.end_pos, true, false});
     
     return true;
   }
@@ -223,30 +250,30 @@ namespace Chess
 
   void ChessGameHandler::update_game_state()
   {
-    Chess::Color current_color = current_grid_.current_turn;
+    Chess::Color current_color  = current_grid_.current_turn;
     Chess::Color opponent_color = (current_color == Chess::Color::WHITE) ? Chess::Color::BLACK : Chess::Color::WHITE;
-    
+
     // Check for checkmate
     if (board_manager_->is_checkmate(current_grid_, opponent_color))
     {
       session_.state = GameState::CHECKMATE;
       return;
     }
-    
+
     // Check for stalemate
     if (board_manager_->is_stalemate(current_grid_, opponent_color))
     {
       session_.state = GameState::STALEMATE;
       return;
     }
-    
+
     // Check for draw
     if (board_manager_->is_draw(current_grid_, current_color))
     {
       session_.state = GameState::DRAW_INSUFFICIENT_MATERIAL; // Default to insufficient material draw
       return;
     }
-    
+
     // Game continues
     session_.state = GameState::ONGOING;
   }
@@ -257,14 +284,26 @@ namespace Chess
     char base_char = ' ';
     switch (type)
     {
-      case Chess::PieceType::PAWN:   base_char = 'P'; break;
-      case Chess::PieceType::KNIGHT: base_char = 'N'; break;
-      case Chess::PieceType::BISHOP: base_char = 'B'; break;
-      case Chess::PieceType::ROOK:   base_char = 'R'; break;
-      case Chess::PieceType::QUEEN:  base_char = 'Q'; break;
-      case Chess::PieceType::KING:   base_char = 'K'; break;
+    case Chess::PieceType::PAWN:
+      base_char = 'P';
+      break;
+    case Chess::PieceType::KNIGHT:
+      base_char = 'N';
+      break;
+    case Chess::PieceType::BISHOP:
+      base_char = 'B';
+      break;
+    case Chess::PieceType::ROOK:
+      base_char = 'R';
+      break;
+    case Chess::PieceType::QUEEN:
+      base_char = 'Q';
+      break;
+    case Chess::PieceType::KING:
+      base_char = 'K';
+      break;
     }
-    
+
     return (color == Chess::Color::WHITE) ? base_char : static_cast<char>(tolower(base_char));
   }
 

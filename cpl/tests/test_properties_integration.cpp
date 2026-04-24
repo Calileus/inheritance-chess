@@ -49,12 +49,12 @@ class PropertiesIntegrationTest : public ::testing::Test
     {
       // Initialize grid to standard position
       test_grid.initialize_standard_position();
-      
+
       // Clear test vectors
-      moves = {};
+      moves          = {};
       expected_moves = {};
-      other_pieces = {};
-      other_colors = {};
+      other_pieces   = {};
+      other_colors   = {};
     }
 
     /// @brief   Clean up test environment after each test.
@@ -71,24 +71,28 @@ TEST_F(PropertiesIntegrationTest, EnPassantPropertiesIntegration)
 {
   // Set up en passant scenario: white pawn at e5, black pawn at d5
   auto white_pawn = std::make_unique<Chess::ChessPawn>(Chess::Color::WHITE, Chess::Position(4, 4));
-  
-  // Place black pawn at d5 (position that just moved two squares)
+
+  // Place black pawn at d5 on the grid (position that just moved two squares)
+  Chess::PieceProperties black_pawn;
+  black_pawn.type     = Chess::PieceType::PAWN;
+  black_pawn.color    = Chess::Color::BLACK;
+  black_pawn.position = Chess::Position(3, 4); // d5 - black pawn (rank index 4 for rank 5)
+  test_grid.set_piece_for_test(Chess::Position(3, 4), black_pawn);
+
   other_pieces = {
-    Chess::Position(3, 3)  // d5 - black pawn
+      Chess::Position(3, 4) // d5 - black pawn (rank index 4 for rank 5)
   };
-  other_colors = {
-    Chess::Color::BLACK
-  };
+  other_colors = {Chess::Color::BLACK};
 
   // Set Properties to indicate en passant is available
   test_grid.flags.halfmove_clock = 0; // Indicates a pawn just moved
-  
+
   white_pawn->available_moves(moves, other_pieces, other_colors, test_grid);
-  
+
   // White pawn should be able to capture en passant at d6
   expected_moves.push_back(Chess::Position(4, 5)); // e6 (forward)
   expected_moves.push_back(Chess::Position(3, 5)); // d6 (en passant capture)
-  
+
   EXPECT_EQ(moves.size(), expected_moves.size());
   for (size_t i = 0; i < expected_moves.size(); i++)
   {
@@ -103,22 +107,27 @@ TEST_F(PropertiesIntegrationTest, EnPassantExpiredWhenHalfmoveClockNonZero)
 {
   // Set up same scenario as above but with halfmove_clock > 0
   auto white_pawn = std::make_unique<Chess::ChessPawn>(Chess::Color::WHITE, Chess::Position(4, 4));
-  
+
+  // Place black pawn at d5 on the grid (position that just moved two squares)
+  Chess::PieceProperties black_pawn;
+  black_pawn.type     = Chess::PieceType::PAWN;
+  black_pawn.color    = Chess::Color::BLACK;
+  black_pawn.position = Chess::Position(3, 4); // d5 - black pawn (rank index 4 for rank 5)
+  test_grid.set_piece_for_test(Chess::Position(3, 4), black_pawn);
+
   other_pieces = {
-    Chess::Position(3, 3)  // d5 - black pawn
+      Chess::Position(3, 4) // d5 - black pawn (rank index 4 for rank 5)
   };
-  other_colors = {
-    Chess::Color::BLACK
-  };
+  other_colors = {Chess::Color::BLACK};
 
   // Set Properties to indicate en passant is NOT available
   test_grid.flags.halfmove_clock = 1; // More than 0 moves since last pawn move
-  
+
   white_pawn->available_moves(moves, other_pieces, other_colors, test_grid);
-  
+
   // White pawn should only be able to move forward (no en passant)
   expected_moves.push_back(Chess::Position(4, 5)); // e6 (forward only)
-  
+
   EXPECT_EQ(moves.size(), expected_moves.size());
   for (size_t i = 0; i < expected_moves.size(); i++)
   {
@@ -133,17 +142,20 @@ TEST_F(PropertiesIntegrationTest, KingsideCastlingPropertiesIntegration)
 {
   // Set up white king at starting position
   auto white_king = std::make_unique<Chess::ChessKing>(Chess::Color::WHITE, Chess::Position(4, 0));
-  
+
   // Ensure castling rights are available
-  test_grid.flags.white_can_castle_kingside = true;
+  test_grid.flags.white_can_castle_kingside  = true;
   test_grid.flags.white_can_castle_queenside = true;
-  
-  // Empty board (no other pieces)
-  other_pieces = {};
-  other_colors = {};
-  
+
+  // Add rooks for castling (kingside and queenside)
+  other_pieces = {
+      Chess::Position(7, 0), // h1 - kingside rook
+      Chess::Position(0, 0)  // a1 - queenside rook
+  };
+  other_colors = {Chess::Color::WHITE, Chess::Color::WHITE};
+
   white_king->available_moves(moves, other_pieces, other_colors, test_grid);
-  
+
   // King should have normal moves plus castling move
   expected_moves.push_back(Chess::Position(3, 0)); // d1
   expected_moves.push_back(Chess::Position(5, 0)); // f1
@@ -151,9 +163,9 @@ TEST_F(PropertiesIntegrationTest, KingsideCastlingPropertiesIntegration)
   expected_moves.push_back(Chess::Position(3, 1)); // d2
   expected_moves.push_back(Chess::Position(5, 1)); // f2
   expected_moves.push_back(Chess::Position(6, 0)); // g1 (kingside castling)
-  
+
   EXPECT_GE(moves.size(), expected_moves.size()); // At least these moves should be available
-  
+
   // Check that castling move is included
   bool found_castling = false;
   for (const auto& move : moves)
@@ -173,24 +185,24 @@ TEST_F(PropertiesIntegrationTest, CastlingDisabledWhenRightsLost)
 {
   // Set up white king at starting position
   auto white_king = std::make_unique<Chess::ChessKing>(Chess::Color::WHITE, Chess::Position(4, 0));
-  
+
   // Disable castling rights
-  test_grid.flags.white_can_castle_kingside = false;
+  test_grid.flags.white_can_castle_kingside  = false;
   test_grid.flags.white_can_castle_queenside = false;
-  
+
   // Empty board (no other pieces)
   other_pieces = {};
   other_colors = {};
-  
+
   white_king->available_moves(moves, other_pieces, other_colors, test_grid);
-  
+
   // King should have normal moves but NO castling
   expected_moves.push_back(Chess::Position(3, 0)); // d1
   expected_moves.push_back(Chess::Position(5, 0)); // f1
   expected_moves.push_back(Chess::Position(4, 1)); // e2
   expected_moves.push_back(Chess::Position(3, 1)); // d2
   expected_moves.push_back(Chess::Position(5, 1)); // f2
-  
+
   EXPECT_EQ(moves.size(), expected_moves.size());
   for (size_t i = 0; i < expected_moves.size(); i++)
   {
@@ -205,17 +217,20 @@ TEST_F(PropertiesIntegrationTest, BlackKingCastlingPropertiesIntegration)
 {
   // Set up black king at starting position
   auto black_king = std::make_unique<Chess::ChessKing>(Chess::Color::BLACK, Chess::Position(4, 7));
-  
+
   // Ensure black castling rights are available
-  test_grid.flags.black_can_castle_kingside = true;
+  test_grid.flags.black_can_castle_kingside  = true;
   test_grid.flags.black_can_castle_queenside = true;
-  
-  // Empty board (no other pieces)
-  other_pieces = {};
-  other_colors = {};
-  
+
+  // Add rooks for castling (kingside and queenside)
+  other_pieces = {
+      Chess::Position(7, 7), // h8 - kingside rook
+      Chess::Position(0, 7)  // a8 - queenside rook
+  };
+  other_colors = {Chess::Color::BLACK, Chess::Color::BLACK};
+
   black_king->available_moves(moves, other_pieces, other_colors, test_grid);
-  
+
   // Check that castling move is included for black king
   bool found_castling = false;
   for (const auto& move : moves)
@@ -235,28 +250,25 @@ TEST_F(PropertiesIntegrationTest, CastlingBlockedByPieces)
 {
   // Set up white king at starting position
   auto white_king = std::make_unique<Chess::ChessKing>(Chess::Color::WHITE, Chess::Position(4, 0));
-  
+
   // Ensure castling rights are available
-  test_grid.flags.white_can_castle_kingside = true;
+  test_grid.flags.white_can_castle_kingside  = true;
   test_grid.flags.white_can_castle_queenside = true;
-  
+
   // Place a piece between king and rook (blocking castling)
   other_pieces = {
-    Chess::Position(5, 0),  // f1 - blocks kingside castling
-    Chess::Position(3, 0)   // d1 - blocks queenside castling
+      Chess::Position(5, 0), // f1 - blocks kingside castling
+      Chess::Position(3, 0)  // d1 - blocks queenside castling
   };
-  other_colors = {
-    Chess::Color::WHITE,
-    Chess::Color::WHITE
-  };
-  
+  other_colors = {Chess::Color::WHITE, Chess::Color::WHITE};
+
   white_king->available_moves(moves, other_pieces, other_colors, test_grid);
-  
+
   // King should have normal moves but NO castling
   expected_moves.push_back(Chess::Position(4, 1)); // e2
   expected_moves.push_back(Chess::Position(3, 1)); // d2
   expected_moves.push_back(Chess::Position(5, 1)); // f2
-  
+
   // Should not include castling moves
   for (const auto& move : moves)
   {
@@ -285,11 +297,11 @@ TEST_F(PropertiesIntegrationTest, TurnManagementIntegration)
 {
   // Test initial turn
   EXPECT_EQ(test_grid.current_turn, Chess::Color::WHITE);
-  
+
   // Switch turn
   test_grid.switch_turn();
   EXPECT_EQ(test_grid.current_turn, Chess::Color::BLACK);
-  
+
   // Switch back
   test_grid.switch_turn();
   EXPECT_EQ(test_grid.current_turn, Chess::Color::WHITE);

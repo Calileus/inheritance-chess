@@ -80,7 +80,7 @@ class ChessPawnTest : public ::testing::Test
     {
       // Initialize grid to standard position
       test_grid.initialize_standard_position();
-      
+
       p_e2_white_pawn = std::make_unique<Chess::ChessPawn>(Chess::Color::WHITE, Chess::Position(4, 1));
       p_e7_black_pawn = std::make_unique<Chess::ChessPawn>(Chess::Color::BLACK, Chess::Position(4, 6));
 
@@ -128,18 +128,18 @@ TEST_F(ChessPawnTest, CreationState)
 TEST_F(ChessPawnTest, StartStepForward)
 {
   // Clear test vectors (adapted from existing pattern)
-  moves = {};
+  moves          = {};
   expected_moves = {};
-  other_pieces = {};
-  other_colors = {};
+  other_pieces   = {};
+  other_colors   = {};
 
   // Test white pawn from e2 (starting position)
   p_e2_white_pawn->available_moves(moves, other_pieces, other_colors, test_grid);
-  
+
   // White pawn should be able to move to e3 and e4 from starting position
   expected_moves.push_back(Chess::Position(4, 2)); // e3
   expected_moves.push_back(Chess::Position(4, 3)); // e4
-  
+
   EXPECT_EQ(moves.size(), expected_moves.size());
   for (size_t i = 0; i < expected_moves.size(); i++)
   {
@@ -148,15 +148,15 @@ TEST_F(ChessPawnTest, StartStepForward)
   }
 
   // Test black pawn from e7 (starting position)
-  moves = {};
+  moves          = {};
   expected_moves = {};
-  
+
   p_e7_black_pawn->available_moves(moves, other_pieces, other_colors, test_grid);
-  
+
   // Black pawn should be able to move to e6 and e5 from starting position
   expected_moves.push_back(Chess::Position(4, 5)); // e6
   expected_moves.push_back(Chess::Position(4, 4)); // e5
-  
+
   EXPECT_EQ(moves.size(), expected_moves.size());
   for (size_t i = 0; i < expected_moves.size(); i++)
   {
@@ -170,17 +170,17 @@ TEST_F(ChessPawnTest, StartStepForward)
 TEST_F(ChessPawnTest, SingleStepFromNonStartPosition)
 {
   // Clear test vectors (adapted from existing pattern)
-  moves = {};
+  moves          = {};
   expected_moves = {};
-  other_pieces = {};
-  other_colors = {};
+  other_pieces   = {};
+  other_colors   = {};
 
   // Test white pawn from e4 (non-starting position)
   p_e4_white_pawn->available_moves(moves, other_pieces, other_colors, test_grid);
-  
+
   // White pawn should only be able to move to e5 (single step)
   expected_moves.push_back(Chess::Position(4, 4)); // e5
-  
+
   EXPECT_EQ(moves.size(), expected_moves.size());
   for (size_t i = 0; i < expected_moves.size(); i++)
   {
@@ -189,14 +189,14 @@ TEST_F(ChessPawnTest, SingleStepFromNonStartPosition)
   }
 
   // Test black pawn from e5 (non-starting position)
-  moves = {};
+  moves          = {};
   expected_moves = {};
-  
+
   p_e5_black_pawn->available_moves(moves, other_pieces, other_colors, test_grid);
-  
+
   // Black pawn should only be able to move to e4 (single step)
   expected_moves.push_back(Chess::Position(4, 3)); // e4
-  
+
   EXPECT_EQ(moves.size(), expected_moves.size());
   for (size_t i = 0; i < expected_moves.size(); i++)
   {
@@ -210,27 +210,24 @@ TEST_F(ChessPawnTest, SingleStepFromNonStartPosition)
 TEST_F(ChessPawnTest, DiagonalCapture)
 {
   // Clear test vectors (adapted from existing pattern)
-  moves = {};
+  moves          = {};
   expected_moves = {};
-  
+
   // Set up pieces for capture test
   // White pawn at e4, black pieces at d5 and f5
   other_pieces = {
-    Chess::Position(3, 4), // d5 - black pawn
-    Chess::Position(5, 4)  // f5 - black pawn
+      Chess::Position(3, 4), // d5 - black pawn
+      Chess::Position(5, 4)  // f5 - black pawn
   };
-  other_colors = {
-    Chess::Color::BLACK,
-    Chess::Color::BLACK
-  };
+  other_colors = {Chess::Color::BLACK, Chess::Color::BLACK};
 
   p_e4_white_pawn->available_moves(moves, other_pieces, other_colors, test_grid);
-  
+
   // White pawn should be able to capture d5 and f5, plus move forward to e5
   expected_moves.push_back(Chess::Position(4, 4)); // e5 (forward)
   expected_moves.push_back(Chess::Position(3, 4)); // d5 (capture)
   expected_moves.push_back(Chess::Position(5, 4)); // f5 (capture)
-  
+
   EXPECT_EQ(moves.size(), expected_moves.size());
   for (size_t i = 0; i < expected_moves.size(); i++)
   {
@@ -244,25 +241,22 @@ TEST_F(ChessPawnTest, DiagonalCapture)
 TEST_F(ChessPawnTest, CannotCaptureOwnPieces)
 {
   // Clear test vectors (adapted from existing pattern)
-  moves = {};
+  moves          = {};
   expected_moves = {};
-  
+
   // Set up pieces with own-colored pieces blocking diagonal captures
   // White pawn at e4, white pieces at d5 and f5
   other_pieces = {
-    Chess::Position(3, 4), // d5 - white pawn (same color)
-    Chess::Position(5, 4)  // f5 - white pawn (same color)
+      Chess::Position(3, 4), // d5 - white pawn (same color)
+      Chess::Position(5, 4)  // f5 - white pawn (same color)
   };
-  other_colors = {
-    Chess::Color::WHITE,
-    Chess::Color::WHITE
-  };
+  other_colors = {Chess::Color::WHITE, Chess::Color::WHITE};
 
   p_e4_white_pawn->available_moves(moves, other_pieces, other_colors, test_grid);
-  
+
   // White pawn should only be able to move forward to e5 (no captures)
   expected_moves.push_back(Chess::Position(4, 4)); // e5 (forward only)
-  
+
   EXPECT_EQ(moves.size(), expected_moves.size());
   for (size_t i = 0; i < expected_moves.size(); i++)
   {
@@ -276,29 +270,33 @@ TEST_F(ChessPawnTest, CannotCaptureOwnPieces)
 TEST_F(ChessPawnTest, EnPassantCaptureWhite)
 {
   // Clear test vectors (adapted from existing pattern)
-  moves = {};
+  moves          = {};
   expected_moves = {};
-  other_pieces = {};
-  other_colors = {};
+  other_pieces   = {};
+  other_colors   = {};
 
   // Set up en passant scenario: white pawn at e5, black pawn just moved from d7 to d5
   // We need to simulate this by setting up the grid state appropriately
   test_grid.flags.halfmove_clock = 0; // Indicates a pawn just moved
-  
-  // Place a black pawn at d5 (position that just moved two squares)
+
+  // Place a black pawn at d5 on the grid (position that just moved two squares)
+  Chess::PieceProperties black_pawn;
+  black_pawn.type     = Chess::PieceType::PAWN;
+  black_pawn.color    = Chess::Color::BLACK;
+  black_pawn.position = Chess::Position(3, 4); // d5 - black pawn (rank index 4 for rank 5)
+  test_grid.set_piece_for_test(Chess::Position(3, 4), black_pawn);
+
   other_pieces = {
-    Chess::Position(3, 3)  // d5 - black pawn
+      Chess::Position(3, 4) // d5 - black pawn
   };
-  other_colors = {
-    Chess::Color::BLACK
-  };
+  other_colors = {Chess::Color::BLACK};
 
   p_e5_white_pawn->available_moves(moves, other_pieces, other_colors, test_grid);
-  
+
   // White pawn should be able to capture en passant at d6
   expected_moves.push_back(Chess::Position(4, 5)); // e6 (forward)
   expected_moves.push_back(Chess::Position(3, 5)); // d6 (en passant capture)
-  
+
   EXPECT_EQ(moves.size(), expected_moves.size());
   for (size_t i = 0; i < expected_moves.size(); i++)
   {
@@ -312,28 +310,35 @@ TEST_F(ChessPawnTest, EnPassantCaptureWhite)
 TEST_F(ChessPawnTest, EnPassantCaptureBlack)
 {
   // Clear test vectors (adapted from existing pattern)
-  moves = {};
+  moves          = {};
   expected_moves = {};
-  other_pieces = {};
-  other_colors = {};
+  other_pieces   = {};
+  other_colors   = {};
 
-  // Set up en passant scenario: black pawn at e4, white pawn just moved from e2 to e4
+  // Set up en passant scenario: black pawn at e5, white pawn just moved from e2 to e4
   test_grid.flags.halfmove_clock = 0; // Indicates a pawn just moved
-  
-  // Place a white pawn at e4 (position that just moved two squares)
-  other_pieces = {
-    Chess::Position(4, 3)  // e4 - white pawn
-  };
-  other_colors = {
-    Chess::Color::WHITE
-  };
 
-  p_e4_black_pawn->available_moves(moves, other_pieces, other_colors, test_grid);
-  
+  // Place a white pawn at e4 on the grid (position that just moved two squares)
+  Chess::PieceProperties white_pawn;
+  white_pawn.type     = Chess::PieceType::PAWN;
+  white_pawn.color    = Chess::Color::WHITE;
+  white_pawn.position = Chess::Position(4, 3); // e4 - white pawn (rank index 3 for rank 4)
+  white_pawn.en_passant_vulnerable = true; // This pawn is vulnerable to en passant
+  test_grid.set_piece_for_test(Chess::Position(4, 3), white_pawn);
+
+  other_pieces = {
+      Chess::Position(4, 3) // e4 - white pawn
+  };
+  other_colors = {Chess::Color::WHITE};
+
+  // Create a black pawn at e5 (instead of e4) for proper en passant setup
+  auto p_e5_black_temp = std::make_unique<Chess::ChessPawn>(Chess::Color::BLACK, Chess::Position(4, 4));
+  p_e5_black_temp->available_moves(moves, other_pieces, other_colors, test_grid);
+
   // Black pawn should be able to capture en passant at e3
   expected_moves.push_back(Chess::Position(4, 2)); // e3 (forward)
-  expected_moves.push_back(Chess::Position(4, 2)); // e3 (en passant capture - same as forward in this case)
-  
+  expected_moves.push_back(Chess::Position(4, 3)); // e4 (en passant capture)
+
   EXPECT_EQ(moves.size(), expected_moves.size());
   for (size_t i = 0; i < expected_moves.size(); i++)
   {
@@ -347,23 +352,21 @@ TEST_F(ChessPawnTest, EnPassantCaptureBlack)
 TEST_F(ChessPawnTest, BlockedForwardMovement)
 {
   // Clear test vectors (adapted from existing pattern)
-  moves = {};
+  moves          = {};
   expected_moves = {};
-  
+
   // Set up piece blocking forward movement
   // White pawn at e2, black pawn at e3
   other_pieces = {
-    Chess::Position(4, 2)  // e3 - black pawn blocking
+      Chess::Position(4, 2) // e3 - black pawn blocking
   };
-  other_colors = {
-    Chess::Color::BLACK
-  };
+  other_colors = {Chess::Color::BLACK};
 
   p_e2_white_pawn->available_moves(moves, other_pieces, other_colors, test_grid);
-  
+
   // White pawn should have no moves (blocked forward, no diagonal captures)
   expected_moves = {}; // No valid moves
-  
+
   EXPECT_EQ(moves.size(), expected_moves.size());
 }
 
@@ -374,21 +377,21 @@ TEST_F(ChessPawnTest, PositionManagement)
   // Test position setting
   Chess::Position new_pos(6, 2);
   p_e2_white_pawn->set_position(new_pos);
-  
+
   EXPECT_EQ(p_e2_white_pawn->get_position(), new_pos);
-  
+
   // Test movement from new position
-  moves = {};
+  moves          = {};
   expected_moves = {};
-  other_pieces = {};
-  other_colors = {};
-  
+  other_pieces   = {};
+  other_colors   = {};
+
   p_e2_white_pawn->available_moves(moves, other_pieces, other_colors, test_grid);
-  
+
   // From g2, should be able to move to g3 and g4 (still starting position)
   expected_moves.push_back(Chess::Position(6, 3)); // g3
   expected_moves.push_back(Chess::Position(6, 4)); // g4
-  
+
   EXPECT_EQ(moves.size(), expected_moves.size());
   for (size_t i = 0; i < expected_moves.size(); i++)
   {
