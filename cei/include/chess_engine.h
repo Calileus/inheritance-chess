@@ -14,7 +14,6 @@
 
 #include "grid.h"
 #include "move.h"
-#include "game_handler.h"
 #include <memory>
 #include <vector>
 #include <chrono>
@@ -96,7 +95,6 @@ namespace Chess
       int evaluate_material(const Grid& grid);
 
     private:
-      std::unique_ptr<ChessGameHandler> game_handler_; ///< Game handler for move validation
       int difficulty_level_;                         ///< Current engine difficulty (1-10)
       
       // Search statistics

@@ -17,7 +17,7 @@ namespace Chess
 
   ChessGameHandler::ChessGameHandler()
       : board_manager_(std::make_unique<ChessBoardManager>()), pieces_logic_(std::make_unique<ChessPiecesLogic>()),
-        translation_unit_(std::make_unique<ChessTranslationUnit>())
+        translation_unit_(std::make_unique<ChessTranslationUnit>()), event_system_(std::make_unique<ChessEventSystem>())
   {
   }
 
@@ -29,6 +29,9 @@ namespace Chess
     session_.state      = GameState::ONGOING;
     session_.white_time = std::chrono::milliseconds(600000); // 10 minutes
     session_.black_time = std::chrono::milliseconds(600000); // 10 minutes
+    
+    // Emit game started event
+    event_system_->emit_game_started(current_grid_);
   }
 
   void ChessGameHandler::load_game_from_fen(const std::string& fen)
@@ -69,8 +72,15 @@ namespace Chess
     // Add to move history
     session_.move_history.push_back(move);
 
+    // Emit move executed event
+    event_system_->emit_move_executed(current_grid_, move, current_grid_.current_turn);
+
     // Switch turns
+    Color old_turn = current_grid_.current_turn;
     current_grid_.switch_turn();
+
+    // Emit turn changed event
+    event_system_->emit_turn_changed(current_grid_, current_grid_.current_turn);
 
     // Check for game end conditions
     update_game_state();
@@ -179,6 +189,8 @@ namespace Chess
   }
 
   const Grid& ChessGameHandler::get_current_grid() const { return current_grid_; }
+
+  ChessEventSystem& ChessGameHandler::get_event_system() { return *event_system_; }
 
   bool ChessGameHandler::execute_move_on_grid(const Move& move)
   {

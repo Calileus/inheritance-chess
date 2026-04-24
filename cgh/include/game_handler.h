@@ -17,6 +17,7 @@
 #include "board_manager.h"
 #include "pieces_logic.h"
 #include "translation_unit.h"
+#include "event_system.h"
 #include <chrono>
 #include <memory>
 #include <string>
@@ -89,6 +90,10 @@ namespace Chess
       /// @return Reference to current grid.
       const Grid& get_current_grid() const;
 
+      /// @brief Get event system for subscribing to game events.
+      /// @return Reference to event system.
+      ChessEventSystem& get_event_system();
+
     private:
       /// @brief Execute a move on the grid.
       /// @param move Move to execute.
@@ -127,6 +132,7 @@ namespace Chess
       std::unique_ptr<ChessBoardManager>    board_manager_;    ///< Board rule enforcement
       std::unique_ptr<ChessPiecesLogic>     pieces_logic_;     ///< Piece move generation
       std::unique_ptr<ChessTranslationUnit> translation_unit_; ///< Notation translation
+      std::unique_ptr<ChessEventSystem>     event_system_;     ///< Event notification system
 
       Grid        current_grid_; ///< Current board state
       GameSession session_;      ///< Game session metadata

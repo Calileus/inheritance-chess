@@ -17,10 +17,9 @@ namespace Chess
 {
 
   ChessEngine::ChessEngine()
-      : game_handler_(std::make_unique<ChessGameHandler>()),
-        difficulty_level_(5),
+      : difficulty_level_(5),
         total_nodes_searched_(0),
-        total_search_time_(0),
+        total_search_time_(std::chrono::milliseconds(0)),
         searches_performed_(0)
   {
   }
@@ -106,8 +105,10 @@ namespace Chess
 
   std::vector<Move> ChessEngine::get_legal_moves(const Grid& grid)
   {
-    // Use game handler to get legal moves
-    return game_handler_->get_legal_moves(grid);
+    // Simple implementation - return empty for now
+    // TODO: Implement proper legal move generation
+    std::vector<Move> moves;
+    return moves;
   }
 
   bool ChessEngine::is_draw(const Grid& grid)
