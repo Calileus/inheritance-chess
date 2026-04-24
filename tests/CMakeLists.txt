@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.28)
-set(CMAKE_CXX_STANDARD 17)
+cmake_minimum_required(VERSION 3.20)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 add_definitions(-DUNICODE -D_UNICODE)
 
@@ -18,25 +18,38 @@ file(GLOB CCI_TEST_SOURCES "../cci/tests/test_*.cpp")
 file(GLOB CPL_TEST_SOURCES "../cpl/tests/test_*.cpp")
 file(GLOB CGH_TEST_SOURCES "../cgh/tests/test_*.cpp")
 file(GLOB CEI_TEST_SOURCES "../cei/tests/test_*.cpp")
-add_executable("test_${EXE_NAME}" ${CCI_TEST_SOURCES} ${CPL_TEST_SOURCES} ${CGH_TEST_SOURCES} ${CEI_TEST_SOURCES})
-target_link_libraries("test_${EXE_NAME}" gtest gtest_main gmock )
+
+add_executable("test_${EXE_NAME}" 
+    ${CCI_TEST_SOURCES} 
+    ${CPL_TEST_SOURCES} 
+    ${CGH_TEST_SOURCES} 
+    ${CEI_TEST_SOURCES}
+)
+
+# Link with modular libraries
+target_link_libraries("test_${EXE_NAME}" 
+    gtest 
+    gtest_main 
+    gmock 
+    cci
+    cpl
+    cbm
+    ctu
+    ces
+    cgh
+    cei
+)
 
 # Include directories for modular components
-target_include_directories("test_${EXE_NAME}" PRIVATE "${CMAKE_SOURCE_DIR}/cci/include")
-target_include_directories("test_${EXE_NAME}" PRIVATE "${CMAKE_SOURCE_DIR}/cpl/include")
-target_include_directories("test_${EXE_NAME}" PRIVATE "${CMAKE_SOURCE_DIR}/cgh/include")
-target_include_directories("test_${EXE_NAME}" PRIVATE "${CMAKE_SOURCE_DIR}/cbm/include")
-target_include_directories("test_${EXE_NAME}" PRIVATE "${CMAKE_SOURCE_DIR}/ctu/include")
-target_include_directories("test_${EXE_NAME}" PRIVATE "${CMAKE_SOURCE_DIR}/cei/include")
-
-# Include source files for modular components
-file(GLOB CCI_PROJECT_SOURCES "${CMAKE_SOURCE_DIR}/cci/src/*.cpp")
-file(GLOB CPL_PROJECT_SOURCES "${CMAKE_SOURCE_DIR}/cpl/src/*.cpp")
-file(GLOB CGH_PROJECT_SOURCES "${CMAKE_SOURCE_DIR}/cgh/src/*.cpp")
-file(GLOB CBM_PROJECT_SOURCES "${CMAKE_SOURCE_DIR}/cbm/src/*.cpp")
-file(GLOB CTU_PROJECT_SOURCES "${CMAKE_SOURCE_DIR}/ctu/src/*.cpp")
-file(GLOB CEI_PROJECT_SOURCES "${CMAKE_SOURCE_DIR}/cei/src/*.cpp")
-target_sources("test_${EXE_NAME}" PRIVATE ${CCI_PROJECT_SOURCES} ${CPL_PROJECT_SOURCES} ${CGH_PROJECT_SOURCES} ${CBM_PROJECT_SOURCES} ${CTU_PROJECT_SOURCES} ${CEI_PROJECT_SOURCES})
+target_include_directories("test_${EXE_NAME}" PRIVATE 
+    "${CMAKE_SOURCE_DIR}/cci/include"
+    "${CMAKE_SOURCE_DIR}/cpl/include"
+    "${CMAKE_SOURCE_DIR}/cgh/include"
+    "${CMAKE_SOURCE_DIR}/cbm/include"
+    "${CMAKE_SOURCE_DIR}/ctu/include"
+    "${CMAKE_SOURCE_DIR}/ces/include"
+    "${CMAKE_SOURCE_DIR}/cei/include"
+)
 
 # Future modular component tests (Phase 2) - structure ready
 # file(GLOB CBM_TEST_SOURCES "../cbm/tests/test_*.cpp")

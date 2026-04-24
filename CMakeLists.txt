@@ -1,41 +1,44 @@
-cmake_minimum_required(VERSION 3.28)
-set(CMAKE_CXX_STANDARD 17)
+cmake_minimum_required(VERSION 3.20)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 add_definitions(-DUNICODE -D_UNICODE)
 
-project(inheritance_chess_project)
+project(inheritance_chess_project VERSION 1.0.0 LANGUAGES CXX)
 
-# New modular CCI component support
-include_directories("cci/include")
-file(GLOB CCI_SOURCES "cci/src/*.cpp")
-add_executable(${EXE_NAME})
-target_sources(${EXE_NAME} PRIVATE ${CCI_SOURCES} main.cpp)
+# Build type
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
 
-# CPL component support (Phase 2) - now active
-include_directories("cpl/include")
-file(GLOB CPL_SOURCES "cpl/src/*.cpp")
-target_sources(${EXE_NAME} PRIVATE ${CPL_SOURCES})
+# Compiler-specific options
+if(MSVC)
+    add_compile_options(/W4)
+else()
+    add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
 
-# CGH component support (Phase 3) - now active
-include_directories("cgh/include")
-file(GLOB CGH_SOURCES "cgh/src/*.cpp")
-target_sources(${EXE_NAME} PRIVATE ${CGH_SOURCES})
+# Add subdirectories for each component
+add_subdirectory(cci)
+add_subdirectory(cpl)
+add_subdirectory(cbm)
+add_subdirectory(ctu)
+add_subdirectory(ces)
+add_subdirectory(cgh)
+add_subdirectory(cei)
 
-# CBM component support (Phase 3) - now active  
-include_directories("cbm/include")
-file(GLOB CBM_SOURCES "cbm/src/*.cpp")
-target_sources(${EXE_NAME} PRIVATE ${CBM_SOURCES})
+# Main executable
+add_executable(${EXE_NAME} main.cpp)
 
-# CTU component support (Phase 3) - now active
-include_directories("ctu/include")
-file(GLOB CTU_SOURCES "ctu/src/*.cpp")
-target_sources(${EXE_NAME} PRIVATE ${CTU_SOURCES})
+# Link main executable with all component libraries
+target_link_libraries(${EXE_NAME}
+    cci
+    cpl
+    cbm
+    ctu
+    ces
+    cgh
+    cei
+)
 
-# CEI component support (Phase 4) - now active
-include_directories("cei/include")
-file(GLOB CEI_SOURCES "cei/src/*.cpp")
-target_sources(${EXE_NAME} PRIVATE ${CEI_SOURCES})
-
-
-# Add tests (leveraging existing test structure)
+# Add tests
 add_subdirectory(tests)
