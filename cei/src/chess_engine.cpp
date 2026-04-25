@@ -8,6 +8,7 @@
 /// @details   Implements move evaluation, search algorithms, and AI capabilities.
 
 #include "chess_engine.h"
+#include "grid.h"
 #include <algorithm>
 #include <iostream>
 #include <thread>
@@ -105,10 +106,109 @@ namespace Chess
 
   std::vector<Move> ChessEngine::get_legal_moves(const Grid& grid)
   {
-    // Simple implementation - return empty for now
-    // TODO: Implement proper legal move generation
-    std::vector<Move> moves;
-    return moves;
+    std::vector<Move> all_moves;
+    
+    // Collect all pieces on the board
+    std::vector<Position> all_piece_positions;
+    std::vector<Color> all_piece_colors;
+    
+    for (int file = 0; file < 8; file++)
+    {
+      for (int rank = 0; rank < 8; rank++)
+      {
+        const auto& piece_opt = grid.get_piece(Position{file, rank});
+        if (piece_opt.has_value())
+        {
+          all_piece_positions.push_back(Position{file, rank});
+          all_piece_colors.push_back(piece_opt->color);
+        }
+      }
+    }
+    
+    // Iterate through all squares on the board
+    for (int file = 0; file < 8; file++)
+    {
+      for (int rank = 0; rank < 8; rank++)
+      {
+        Position pos{file, rank};
+        
+        // Check if there's a piece at this position
+        const auto& piece_opt = grid.get_piece(pos);
+        if (!piece_opt.has_value())
+        {
+          continue; // Empty square
+        }
+        
+        const auto& piece_props = piece_opt.value();
+        
+        // Only process pieces of the current player
+        if (piece_props.color != grid.current_turn)
+        {
+          continue;
+        }
+        
+        // Get the actual piece object from the grid
+        const ChessPiece* piece = grid.get_piece_at(pos);
+        if (!piece)
+        {
+          // If piece object not found, use PieceProperties to generate moves
+          // Create temporary piece for move generation
+          auto temp_piece = create_piece(piece_props.type, piece_props.color, pos);
+          if (temp_piece)
+          {
+            // Get positions and colors of OTHER pieces
+            std::vector<Position> other_positions;
+            std::vector<Color> other_colors;
+            
+            for (size_t i = 0; i < all_piece_positions.size(); i++)
+            {
+              if (all_piece_positions[i] != pos)
+              {
+                other_positions.push_back(all_piece_positions[i]);
+                other_colors.push_back(all_piece_colors[i]);
+              }
+            }
+            
+            // Get available moves
+            PositionList moves;
+            temp_piece->available_moves(moves, other_positions, other_colors, grid);
+            
+            // Convert positions to moves
+            for (const auto& end_pos : moves)
+            {
+              all_moves.emplace_back(pos, end_pos);
+            }
+          }
+        }
+        else
+        {
+          // Get positions and colors of OTHER pieces
+          std::vector<Position> other_positions;
+          std::vector<Color> other_colors;
+          
+          for (size_t i = 0; i < all_piece_positions.size(); i++)
+          {
+            if (all_piece_positions[i] != pos)
+            {
+              other_positions.push_back(all_piece_positions[i]);
+              other_colors.push_back(all_piece_colors[i]);
+            }
+          }
+          
+          // Get all available moves for this piece
+          PositionList moves;
+          piece->available_moves(moves, other_positions, other_colors, grid);
+          
+          // Convert positions to moves
+          for (const auto& end_pos : moves)
+          {
+            all_moves.emplace_back(pos, end_pos);
+          }
+        }
+      }
+    }
+    
+    return all_moves;
   }
 
   bool ChessEngine::is_draw(const Grid& grid)

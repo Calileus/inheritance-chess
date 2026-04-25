@@ -241,16 +241,75 @@ namespace Chess
 
   bool ChessGameHandler::execute_castling(const Move& move)
   {
-    // TODO: Implement castling logic
-    // This would involve moving both king and rook
-    return execute_regular_move(move);
+    // Move the king first
+    auto king = current_grid_.get_piece_at(move.start_pos);
+    if (!king)
+    {
+      return false;
+    }
+    
+    // Clear king's starting position
+    current_grid_.clear_square(move.start_pos);
+    
+    // Move king to end position
+    king->set_position(move.end_pos);
+    current_grid_.set_piece_for_test(move.end_pos, 
+        Chess::PieceProperties{king->get_type(), king->get_color(), move.end_pos, true, false});
+    
+    // Determine rook movement based on castling type
+    Position rook_start;
+    Position rook_end;
+    int rank = move.start_pos.rank; // Same rank as king
+    
+    if (move.flags == SpecialFlags::CASTLE_KINGSIDE)
+    {
+      // Kingside castling: Rook moves from h-file to f-file
+      rook_start = Position(7, rank); // h-file
+      rook_end = Position(5, rank);   // f-file
+    }
+    else // CASTLE_QUEENSIDE
+    {
+      // Queenside castling: Rook moves from a-file to d-file
+      rook_start = Position(0, rank); // a-file
+      rook_end = Position(3, rank);   // d-file
+    }
+    
+    // Move the rook
+    auto rook = current_grid_.get_piece_at(rook_start);
+    if (rook)
+    {
+      current_grid_.clear_square(rook_start);
+      rook->set_position(rook_end);
+      current_grid_.set_piece_for_test(rook_end, 
+          Chess::PieceProperties{rook->get_type(), rook->get_color(), rook_end, true, false});
+    }
+    
+    return true;
   }
 
   bool ChessGameHandler::execute_en_passant(const Move& move)
   {
-    // TODO: Implement en passant logic
-    // This would involve capturing pawn that moved two squares
-    return execute_regular_move(move);
+    // Move the pawn
+    auto pawn = current_grid_.get_piece_at(move.start_pos);
+    if (!pawn)
+    {
+      return false;
+    }
+    
+    // Clear pawn's starting position
+    current_grid_.clear_square(move.start_pos);
+    
+    // Move pawn to end position (empty square)
+    pawn->set_position(move.end_pos);
+    current_grid_.set_piece_for_test(move.end_pos, 
+        Chess::PieceProperties{pawn->get_type(), pawn->get_color(), move.end_pos, true, false});
+    
+    // Capture the enemy pawn on the original rank
+    // The captured pawn is at (end_pos.file, start_pos.rank)
+    Position captured_pawn_pos(move.end_pos.file, move.start_pos.rank);
+    current_grid_.clear_square(captured_pawn_pos);
+    
+    return true;
   }
 
   bool ChessGameHandler::execute_promotion(const Move& move)
