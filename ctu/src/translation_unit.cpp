@@ -25,30 +25,125 @@ namespace Chess
 
   std::string ChessTranslationUnit::internal_to_fen(const Grid& grid) const
   {
-    // TODO: Convert Grid to FEN notation
-    return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    std::string fen;
+
+    // Build piece placement (from rank 7 down to 0, representing rows 8-1)
+    for (int rank = 7; rank >= 0; --rank)
+    {
+      int empty_count = 0;
+
+      for (int file = 0; file < 8; ++file)
+      {
+        const auto& piece_opt = grid.get_piece(Position(file, rank));
+
+        if (piece_opt.has_value())
+        {
+          // Add empty squares count if any
+          if (empty_count > 0)
+          {
+            fen += std::to_string(empty_count);
+            empty_count = 0;
+          }
+
+          // Add piece character
+          char piece_char;
+          switch (piece_opt->type)
+          {
+          case PieceType::PAWN:
+            piece_char = 'p';
+            break;
+          case PieceType::KNIGHT:
+            piece_char = 'n';
+            break;
+          case PieceType::BISHOP:
+            piece_char = 'b';
+            break;
+          case PieceType::ROOK:
+            piece_char = 'r';
+            break;
+          case PieceType::QUEEN:
+            piece_char = 'q';
+            break;
+          case PieceType::KING:
+            piece_char = 'k';
+            break;
+          default:
+            piece_char = '?';
+          }
+
+          // Uppercase for white pieces
+          if (piece_opt->color == Color::WHITE)
+          {
+            piece_char = std::toupper(piece_char);
+          }
+
+          fen += piece_char;
+        }
+        else
+        {
+          empty_count++;
+        }
+      }
+
+      // Add remaining empty squares count
+      if (empty_count > 0)
+      {
+        fen += std::to_string(empty_count);
+      }
+
+      // Add rank separator
+      if (rank > 0)
+      {
+        fen += '/';
+      }
+    }
+
+    // Add active color
+    fen += (grid.current_turn == Color::WHITE) ? " w " : " b ";
+
+    // Add castling rights
+    std::string castling;
+    if (grid.flags.white_can_castle_kingside)
+      castling += 'K';
+    if (grid.flags.white_can_castle_queenside)
+      castling += 'Q';
+    if (grid.flags.black_can_castle_kingside)
+      castling += 'k';
+    if (grid.flags.black_can_castle_queenside)
+      castling += 'q';
+    if (castling.empty())
+      castling = '-';
+
+    fen += castling;
+
+    // Add en passant target square (currently not tracked, using -)
+    fen += " - ";
+
+    // Add halfmove and fullmove counters
+    fen += std::to_string(grid.flags.halfmove_clock) + " ";
+    fen += std::to_string(grid.flags.fullmove_number);
+
+    return fen;
   }
 
   Move ChessTranslationUnit::algebraic_to_move(const std::string& algebraic, const Grid& grid) const
   {
     // Handle long algebraic notation: e2e4, a7a5, etc.
     // Format: source_file (a-h) + source_rank (1-8) + dest_file (a-h) + dest_rank (1-8)
-    
+
     if (algebraic.length() == 4)
     {
       // Parse source square
       char src_file_char = std::tolower(algebraic[0]);
       char src_rank_char = algebraic[1];
-      
+
       // Parse destination square
       char dst_file_char = std::tolower(algebraic[2]);
       char dst_rank_char = algebraic[3];
-      
+
       // Validate characters
-      if (src_file_char >= 'a' && src_file_char <= 'h' &&
-          src_rank_char >= '1' && src_rank_char <= '8' &&
-          dst_file_char >= 'a' && dst_file_char <= 'h' &&
-          dst_rank_char >= '1' && dst_rank_char <= '8')
+      if (src_file_char >= 'a' && src_file_char <= 'h' && src_rank_char >= '1' && src_rank_char <= '8'
+          && dst_file_char >= 'a' && dst_file_char <= 'h' && dst_rank_char >= '1' && dst_rank_char <= '8')
       {
         // Convert to 0-based indices
         // Files: a-h -> 0-7
@@ -57,16 +152,16 @@ namespace Chess
         int src_rank = src_rank_char - '1';
         int dst_file = dst_file_char - 'a';
         int dst_rank = dst_rank_char - '1';
-        
+
         return Move(Position(src_file, src_rank), Position(dst_file, dst_rank));
       }
     }
-    
+
     // TODO: Implement other algebraic notation formats
     // - Short algebraic (e4, Nf3, etc.)
     // - Castling (O-O, O-O-O)
     // - Captures and check notation (exd5+, etc.)
-    
+
     return Move(); // Return empty move if parsing fails
   }
 
@@ -74,23 +169,23 @@ namespace Chess
   {
     // Convert move to long algebraic notation: e2e4, a7a5, etc.
     // Format: source_file (a-h) + source_rank (1-8) + dest_file (a-h) + dest_rank (1-8)
-    
+
     std::string result;
-    
+
     // Validate move positions
     if (!move.start_pos.is_valid() || !move.end_pos.is_valid())
     {
       return ""; // Invalid move
     }
-    
+
     // Convert source position to algebraic notation
-    result += static_cast<char>('a' + move.start_pos.file);  // file (a-h)
-    result += static_cast<char>('1' + move.start_pos.rank);  // rank (1-8)
-    
+    result += static_cast<char>('a' + move.start_pos.file); // file (a-h)
+    result += static_cast<char>('1' + move.start_pos.rank); // rank (1-8)
+
     // Convert destination position to algebraic notation
-    result += static_cast<char>('a' + move.end_pos.file);    // file (a-h)
-    result += static_cast<char>('1' + move.end_pos.rank);    // rank (1-8)
-    
+    result += static_cast<char>('a' + move.end_pos.file); // file (a-h)
+    result += static_cast<char>('1' + move.end_pos.rank); // rank (1-8)
+
     return result;
   }
 

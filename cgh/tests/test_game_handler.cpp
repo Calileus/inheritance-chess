@@ -105,9 +105,9 @@ TEST_F(GameHandlerTest, MakeAlgebraicMove)
   // Game should still be ongoing
   EXPECT_EQ(handler_.get_game_state(), Chess::GameState::ONGOING);
   
-  // FEN should reflect the move
+  // FEN should reflect the move (Black to move after White's e2e4)
   std::string fen = handler_.get_current_fen();
-  EXPECT_NE(fen.find("e4"), std::string::npos); // Should show pawn at e4
+  EXPECT_NE(fen.find("4P3"), std::string::npos); // Should show pawn at e4 (rank 4: 4 empty, P, 3 empty)
 }
 
 /// @test   Verify invalid move handling.

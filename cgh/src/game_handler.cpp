@@ -29,7 +29,7 @@ namespace Chess
     session_.state      = GameState::ONGOING;
     session_.white_time = std::chrono::milliseconds(600000); // 10 minutes
     session_.black_time = std::chrono::milliseconds(600000); // 10 minutes
-    
+
     // Emit game started event
     event_system_->emit_game_started(current_grid_);
   }
@@ -78,6 +78,12 @@ namespace Chess
     // Switch turns
     Color old_turn = current_grid_.current_turn;
     current_grid_.switch_turn();
+
+    // Update fullmove counter (increments after Black's move)
+    if (old_turn == Color::BLACK)
+    {
+      current_grid_.flags.fullmove_number++;
+    }
 
     // Emit turn changed event
     event_system_->emit_turn_changed(current_grid_, current_grid_.current_turn);
@@ -195,8 +201,8 @@ namespace Chess
   bool ChessGameHandler::execute_move_on_grid(const Move& move)
   {
     // Get piece at start position
-    auto piece = current_grid_.get_piece_at(move.start_pos);
-    if (!piece)
+    auto piece_opt = current_grid_.get_piece(move.start_pos);
+    if (!piece_opt.has_value())
     {
       return false;
     }
@@ -221,94 +227,97 @@ namespace Chess
 
   bool ChessGameHandler::execute_regular_move(const Move& move)
   {
-    // Get piece at start position BEFORE clearing
-    auto piece = current_grid_.get_piece_at(move.start_pos);
-    if (!piece)
+    // Get piece properties at start position BEFORE clearing
+    const auto& piece_opt = current_grid_.get_piece(move.start_pos);
+    if (!piece_opt.has_value())
     {
-      return false;
+      return false; // No piece at source
     }
-    
+
+    const auto& piece_props = piece_opt.value();
+
     // Clear start position
     current_grid_.clear_square(move.start_pos);
-    
-    // Set piece at end position
-    piece->set_position(move.end_pos);
-    current_grid_.set_piece_for_test(move.end_pos, 
-        Chess::PieceProperties{piece->get_type(), piece->get_color(), move.end_pos, true, false});
-    
+
+    // Set piece at end position with updated properties
+    current_grid_.set_piece_for_test(
+        move.end_pos, Chess::PieceProperties{piece_props.type, piece_props.color, move.end_pos, true, false});
+
     return true;
   }
 
   bool ChessGameHandler::execute_castling(const Move& move)
   {
-    // Move the king first
-    auto king = current_grid_.get_piece_at(move.start_pos);
-    if (!king)
+    // Get piece properties at start position (should be king)
+    const auto& king_opt = current_grid_.get_piece(move.start_pos);
+    if (!king_opt.has_value() || king_opt->type != Chess::PieceType::KING)
     {
-      return false;
+      return false; // No king at start position
     }
-    
+
+    const auto& king_props = king_opt.value();
+
     // Clear king's starting position
     current_grid_.clear_square(move.start_pos);
-    
+
     // Move king to end position
-    king->set_position(move.end_pos);
-    current_grid_.set_piece_for_test(move.end_pos, 
-        Chess::PieceProperties{king->get_type(), king->get_color(), move.end_pos, true, false});
-    
+    current_grid_.set_piece_for_test(
+        move.end_pos, Chess::PieceProperties{king_props.type, king_props.color, move.end_pos, true, false});
+
     // Determine rook movement based on castling type
     Position rook_start;
     Position rook_end;
-    int rank = move.start_pos.rank; // Same rank as king
-    
+    int      rank = move.start_pos.rank; // Same rank as king
+
     if (move.flags == SpecialFlags::CASTLE_KINGSIDE)
     {
       // Kingside castling: Rook moves from h-file to f-file
       rook_start = Position(7, rank); // h-file
-      rook_end = Position(5, rank);   // f-file
+      rook_end   = Position(5, rank); // f-file
     }
     else // CASTLE_QUEENSIDE
     {
       // Queenside castling: Rook moves from a-file to d-file
       rook_start = Position(0, rank); // a-file
-      rook_end = Position(3, rank);   // d-file
+      rook_end   = Position(3, rank); // d-file
     }
-    
+
     // Move the rook
-    auto rook = current_grid_.get_piece_at(rook_start);
-    if (rook)
+    const auto& rook_opt = current_grid_.get_piece(rook_start);
+    if (rook_opt.has_value())
     {
+      const auto& rook_props = rook_opt.value();
       current_grid_.clear_square(rook_start);
-      rook->set_position(rook_end);
-      current_grid_.set_piece_for_test(rook_end, 
-          Chess::PieceProperties{rook->get_type(), rook->get_color(), rook_end, true, false});
+      current_grid_.set_piece_for_test(
+          rook_end, Chess::PieceProperties{rook_props.type, rook_props.color, rook_end, true, false});
     }
-    
+
     return true;
   }
 
   bool ChessGameHandler::execute_en_passant(const Move& move)
   {
-    // Move the pawn
-    auto pawn = current_grid_.get_piece_at(move.start_pos);
-    if (!pawn)
+    // Get pawn properties at start position
+    const auto& pawn_opt = current_grid_.get_piece(move.start_pos);
+    if (!pawn_opt.has_value() || pawn_opt->type != Chess::PieceType::PAWN)
     {
-      return false;
+      return false; // No pawn at start position
     }
-    
+
+    const auto& pawn_props = pawn_opt.value();
+
     // Clear pawn's starting position
     current_grid_.clear_square(move.start_pos);
-    
+
     // Move pawn to end position (empty square)
-    pawn->set_position(move.end_pos);
-    current_grid_.set_piece_for_test(move.end_pos, 
-        Chess::PieceProperties{pawn->get_type(), pawn->get_color(), move.end_pos, true, false});
-    
+    current_grid_.set_piece_for_test(
+        move.end_pos, Chess::PieceProperties{pawn_props.type, pawn_props.color, move.end_pos, true, false});
+
     // Capture the enemy pawn on the original rank
     // The captured pawn is at (end_pos.file, start_pos.rank)
     Position captured_pawn_pos(move.end_pos.file, move.start_pos.rank);
     current_grid_.clear_square(captured_pawn_pos);
-    
+
     return true;
   }
 
