@@ -23,11 +23,43 @@ class PerformanceTest : public ::testing::Test
 
 TEST_F(PerformanceTest, MoveGenerationPerformance)
 {
-  // TODO: Benchmark move generation
-  // Should complete in < 1ms
+  constexpr int iterations = 200;
+  std::size_t total_moves = 0;
+
+  const auto start = std::chrono::steady_clock::now();
+  for (int i = 0; i < iterations; ++i)
+  {
+    total_moves += handler.get_legal_moves().size();
+  }
+  const auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+      std::chrono::steady_clock::now() - start);
+
+  EXPECT_GT(total_moves, 0u);
+  // Keep threshold conservative to avoid flaky CI while still catching regressions.
+  EXPECT_LT(elapsed_ms.count(), 2000);
 }
 
 TEST_F(PerformanceTest, GameStateCalculation)
 {
-  // TODO: Benchmark game state detection
+  EXPECT_TRUE(handler.make_move("e2e4"));
+  EXPECT_TRUE(handler.make_move("e7e5"));
+  EXPECT_TRUE(handler.make_move("g1f3"));
+  EXPECT_TRUE(handler.make_move("b8c6"));
+
+  constexpr int iterations = 2000;
+  int ongoing_count = 0;
+
+  const auto start = std::chrono::steady_clock::now();
+  for (int i = 0; i < iterations; ++i)
+  {
+    if (handler.get_game_state() == Chess::GameState::ONGOING)
+    {
+      ++ongoing_count;
+    }
+  }
+  const auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+      std::chrono::steady_clock::now() - start);
+
+  EXPECT_EQ(ongoing_count, iterations);
+  EXPECT_LT(elapsed_ms.count(), 2000);
 }

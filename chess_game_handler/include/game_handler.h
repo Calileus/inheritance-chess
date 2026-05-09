@@ -20,7 +20,9 @@
 #include "event_system.h"
 #include <chrono>
 #include <memory>
+#include <optional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace Chess
@@ -74,6 +76,25 @@ namespace Chess
       /// @brief Get current game state.
       GameState get_game_state() const;
 
+      /// @brief Resign game on behalf of the given color.
+      /// @return True if transition applied, false if game already terminal.
+      bool resign(Color color);
+
+      /// @brief Offer draw from the given color.
+      /// @return True if recorded, false if game already terminal.
+      bool offer_draw(Color color);
+
+      /// @brief Accept draw offered by opponent.
+      /// @return True if draw was accepted and state transitioned.
+      bool accept_draw(Color color);
+
+      /// @brief Query whether the given color has an active draw offer.
+      bool is_draw_offered_by(Color color) const;
+
+      /// @brief Declare timeout for given color.
+      /// @return True if transition applied, false if game already terminal.
+      bool declare_timeout(Color color);
+
       /// @brief Start timer for a color.
       void start_timer(Color color);
 
@@ -83,7 +104,7 @@ namespace Chess
       /// @brief Get time remaining for a color.
       std::chrono::milliseconds get_time_remaining(Color color) const;
 
-      /// @brief Display current board state (adapted from existing Board patterns).
+      /// @brief Render the current board state to stdout.
       void display_board() const;
 
       /// @brief Get current grid state.
@@ -123,11 +144,25 @@ namespace Chess
       /// @brief Update game state based on current position.
       void update_game_state();
 
-      /// @brief Get display character for a piece.
-      /// @param type Type of piece.
-      /// @param color Color of piece.
-      /// @return Character representation.
-      char get_piece_display_char(PieceType type, Color color) const;
+      /// @brief Build repetition key from grid using the first four FEN fields.
+      /// @param grid Grid to encode.
+      /// @return Canonical key for threefold repetition tracking.
+      std::string build_repetition_key(const Grid& grid) const;
+
+      /// @brief Reset repetition history and record current position once.
+      void reset_position_history();
+
+      /// @brief Record current position into repetition history.
+      void record_current_position();
+
+      /// @brief Check whether current position occurred at least three times.
+      bool is_threefold_repetition() const;
+
+      /// @brief Apply terminal-state transition consistently.
+      bool apply_terminal_state(GameState state, const std::string& reason);
+
+      /// @brief Clear active draw offers.
+      void clear_draw_offers();
 
       std::unique_ptr<ChessBoardManager>    board_manager_;    ///< Board rule enforcement
       std::unique_ptr<ChessPiecesLogic>     pieces_logic_;     ///< Piece move generation
@@ -136,6 +171,15 @@ namespace Chess
 
       Grid        current_grid_; ///< Current board state
       GameSession session_;      ///< Game session metadata
+
+      std::unordered_map<std::string, int> position_occurrence_counts_; ///< Repetition counts by canonical key.
+
+      bool draw_offered_by_white_ = false;
+      bool draw_offered_by_black_ = false;
+
+        bool                                           timer_running_ = false;
+        Color                                          running_timer_color_ = Color::WHITE;
+        std::optional<std::chrono::steady_clock::time_point> timer_start_time_;
   };
 
 } // namespace Chess

@@ -2,152 +2,65 @@
 
 ## Overview
 
-The Chess Game Handler (CGH) module is the orchestrator that manages the lifecycle of a chess game session and coordinates all other modules.
+`chess_game_handler` (CGH) is the orchestration facade for game lifecycle and module coordination.
 
-## Role: The "Orchestrator"
+It owns module instances, tracks session metadata, updates game state after moves, emits events, and exposes a stable API for app entry points.
 
-CGH is the entry point and main interface for the application. It instantiates all necessary modules and manages game flow, metadata, and time control.
+## Current API
 
-## Core Responsibilities
+### `GameSession`
 
-1. **Game Lifecycle Management**
-   - Start new games from standard position
-   - Load games from FEN notation
-   - Execute moves with full validation
-   - Track game state and history
+- `game_id`
+- `move_history`
+- `white_time`, `black_time`
+- `state`
 
-2. **Module Coordination**
-   - Create and manage instances of CCI, CPL, CBM, CTU
-   - Orchestrate module interactions
-   - Provide unified interface to game logic
+### `ChessGameHandler` (`game_handler.h`)
 
-3. **Game Metadata**
-   - Maintain unique game IDs
-   - Track move history
-   - Manage player information
-   - Record time control settings
+- Lifecycle:
+  - `start_new_game()`
+  - `load_game_from_fen(const std::string&)`
+- Move execution:
+  - `make_move(const std::string&)`
+  - `make_move(const Move&)`
+- Position and rules:
+  - `get_current_fen()`
+  - `get_legal_moves()` and `get_legal_moves(const Grid&)`
+  - `get_game_state()`
+  - `get_current_grid()`
+- Timing:
+  - `start_timer(Color)`
+  - `stop_timer(Color)`
+  - `get_time_remaining(Color)`
+- UI/event seams:
+  - `display_board()`
+  - `get_event_system()`
 
-4. **Time Control**
-   - Track player clocks
-   - Handle timeout conditions
-   - Support various time controls (blitz, rapid, classical)
+## Draw and State Handling
 
-## Key Classes
+CGH computes final game state through CBM + local orchestration checks:
 
-### GameSession
+- Checkmate
+- Stalemate
+- Draw by insufficient material / fifty-move rule (via CBM)
+- Draw by threefold repetition (via CGH position-history map)
 
-Structure holding game metadata:
+Threefold repetition uses canonical keys built from the first four FEN fields and is recorded after position transitions.
 
-```cpp
-struct GameSession {
-    std::string game_id;
-    std::vector<Move> move_history;
-    std::chrono::milliseconds white_time;
-    std::chrono::milliseconds black_time;
-    GameState state;
-};
-```
-
-### ChessGameHandler
-
-Main class with public interface:
-
-```cpp
-class ChessGameHandler {
-public:
-    void start_new_game();
-    void load_game_from_fen(const std::string& fen);
-    bool make_move(const std::string& algebraic_move);
-    bool make_move(const Move& move);
-    std::string get_current_fen() const;
-    std::vector<Move> get_legal_moves() const;
-    GameState get_game_state() const;
-    void start_timer(Color color);
-    void stop_timer(Color color);
-    std::chrono::milliseconds get_time_remaining(Color color) const;
-private:
-    std::unique_ptr<ChessBoardManager> board_manager_;
-    std::unique_ptr<ChessPiecesLogic> pieces_logic_;
-    std::unique_ptr<ChessTranslationUnit> translation_unit_;
-};
-```
-
-## Game Flow
-
-1. **Initialization**
-   - Create new game or load from FEN
-   - Initialize all modules
-   - Set game metadata
-
-2. **Move Execution**
-   - Receive move in algebraic or Move format
-   - Validate move legality (CPL + CBM)
-   - Update board state
-   - Check for game end conditions
-
-3. **Game State Queries**
-   - Get current position as FEN
-   - Get list of legal moves
-   - Query game state (ongoing, checkmate, stalemate, etc.)
-
-4. **Time Management**
-   - Track clock times for each player
-   - Handle time increments/decrements
-   - Detect timeout conditions
-
-## Dependencies
-
-- **CCI**: Uses all CCI structures
-- **CBM**: Board management and rule enforcement
-- **CPL**: Piece logic and move generation
-- **CTU**: Notation conversion
-
-## File Structure
+## Module Layout
 
 ```
-cgh/
-├── include/
-│   └── game_handler.h
-├── src/
-│   └── game_handler.cpp
-└── tests/
-    ├── test_game_handler.cpp
-    ├── test_integration.cpp
-    └── test_performance.cpp
+chess_game_handler/
+  include/
+    game_handler.h
+  src/
+    game_handler.cpp
+  tests/
+    test_game_handler.cpp
+    test_integration.cpp
 ```
 
-## Implementation Notes
+## Notes
 
-- Implements facade pattern for clean API
-- Maintains separation of concerns with module coordination
-- Provides thread-safe game state access
-- Supports both UCI and algebraic notation
-
-## Usage Example
-
-```cpp
-ChessGameHandler game;
-
-// Start a new game
-game.start_new_game();
-
-// Make moves
-bool success = game.make_move("e2e4");
-
-// Get game state
-GameState state = game.get_game_state();
-
-// Get legal moves
-std::vector<Move> moves = game.get_legal_moves();
-
-// Convert to FEN
-std::string fen = game.get_current_fen();
-```
-
-## Future Enhancements
-
-- Save/load game to/from PGN format
-- Move time estimation
-- Engine evaluation integration
-- GUI event handler support
-- Network game support
+- CGH is designed as the central integration boundary for CLI/app flows.
+- Current implementation is single-thread oriented and does not provide internal synchronization primitives.
