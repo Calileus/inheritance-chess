@@ -2,104 +2,70 @@
 
 ## Overview
 
-The Chess Translation Unit (CTU) module handles translation between external chess notations and the engine's internal representations.
+`chess_translation_unit` (CTU) translates between external chess notations/protocol commands and internal CCI structures.
 
-## Role: The "Adapter"
+## Current API
 
-CTU acts as an adapter layer, allowing the chess engine to interface with different UIs (CLI, GUI), external AI engines, and standard chess notation systems.
+### `ChessTranslationUnit` (`translation_unit.h`)
 
-## Core Responsibilities
+- FEN:
+  - `fen_to_internal(const std::string&)`
+  - `internal_to_fen(const Grid&)`
+- Coordinate/algebraic:
+  - `algebraic_to_move(const std::string&, const Grid&)`
+  - `move_to_algebraic(const Move&, const Grid&)`
+- SAN:
+  - `san_to_move(const std::string&, const Grid&)`
+  - `move_to_san(const Move&, const Grid&)`
+- Board rendering:
+  - `render_board_ascii(const Grid&)`
+- PGN move text:
+  - `moves_to_pgn(const std::vector<Move>&, const Grid&, const std::string& result = "*")`
+  - `pgn_to_moves(const std::string&, const Grid&)`
+- Rich PGN parse/serialize:
+  - `parse_pgn_game(const std::string&, const Grid&, const PGNParseOptions&)`
+  - `pgn_game_to_string(const PGNGame&, const Grid&, const PGNSerializeOptions&)`
 
-1. **FEN Notation**
-   - Convert FEN strings to internal Grid representation
-   - Convert Grid representation back to FEN strings
-   - Support all FEN fields (piece placement, active color, castling, en passant, halfmove, fullmove)
+### Protocol Adapter
 
-2. **Algebraic Notation**
-   - Convert algebraic notation (e.g., "e2e4") to Move objects
-   - Convert Move objects back to algebraic notation
-   - Support long algebraic, short algebraic, and UCI formats
+`ChessProtocolAdapter` exposes command handlers for:
 
-3. **Position Utilities**
-   - Convert Position to algebraic coordinates (e.g., "a1", "h8")
-   - Convert algebraic coordinates to Position
+- UCI (`handle_uci_command`)
+- XBoard (`handle_xboard_command`)
 
-## Key Classes
+Using:
 
-### ChessTranslationUnit
+- `ProtocolAdapterState`
+- `ProtocolCommandResult`
 
-Main class with public interface:
+## PGN Data Structures
 
-```cpp
-class ChessTranslationUnit {
-public:
-    Grid fen_to_internal(const std::string& fen_string) const;
-    std::string internal_to_fen(const Grid& grid) const;
-    Move algebraic_to_move(const std::string& algebraic, const Grid& grid) const;
-    std::string move_to_algebraic(const Move& move, const Grid& grid) const;
-};
-```
+- `PGNGame`
+- `PGNMoveNode`
+- `PGNVariation`
+- `PGNParseOptions`
+- `PGNSerializeOptions`
 
-## Notation Formats
+These represent tags, comments, annotations, recursive variations, and tolerant parsing behavior.
 
-### FEN (Forsyth-Edwards Notation)
-
-Format: `rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1`
-
-Fields:
-1. Piece placement (from white's perspective)
-2. Active color (w = white, b = black)
-3. Castling availability (K = kingside, Q = queenside)
-4. En passant target square (- if not available)
-5. Halfmove clock (fifty-move rule)
-6. Fullmove number (starts at 1)
-
-### Algebraic Notation
-
-Examples:
-- `e2e4`: Move pawn from e2 to e4
-- `e1g1`: Kingside castling (king moves from e1 to g1)
-- `a7a8q`: Pawn promotion to queen
-
-### UCI Format
-
-Universal Chess Interface format:
-- `e2e4`: Move from e2 to e4
-- `e7e8q`: Promotion to queen
-
-## Dependencies
-
-- **CCI**: Uses Position, Move, Grid structures
-
-## File Structure
+## Module Layout
 
 ```
-ctu/
-├── include/
-│   └── translation_unit.h
-├── src/
-│   └── translation_unit.cpp
-└── tests/
-    ├── test_translation_unit.cpp
-    └── test_fen_parsing.cpp
+chess_translation_unit/
+  include/
+    translation_unit.h
+  src/
+    translation_unit.cpp
+  tests/
+    test_translation_unit.cpp
+    test_fen_parser.cpp
+    test_algebraic.cpp
+    test_san.cpp
+    test_pgn.cpp
+    test_protocol_adapter.cpp
 ```
 
-## Implementation Notes
+## Notes
 
-- FEN parsing handles all valid FIDE legal positions
-- Algebraic notation conversion includes ambiguity resolution
-- Position coordinates follow standard chess notation (a-h, 1-8)
-- Case-insensitive piece type parsing
-
-## Error Handling
-
-- Throws `std::invalid_argument` for malformed notations
-- Validates position boundaries
-- Verifies position legality when parsing FEN
-
-## Future Enhancements
-
-- Support for PGN (Portable Game Notation) parsing
-- UCI protocol support
-- Xboard protocol support
-- Position comment and annotation support
+- CTU is the module boundary for external notation/protocol interoperability.
+- CGH and executable entry points depend on CTU for text I/O and command translation.

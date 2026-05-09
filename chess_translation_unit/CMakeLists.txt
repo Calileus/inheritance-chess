@@ -15,8 +15,15 @@ target_include_directories(ctu PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
+target_include_directories(ctu PRIVATE
+    ${CMAKE_SOURCE_DIR}/chess_game_handler/include
+    ${CMAKE_SOURCE_DIR}/chess_engine_interface/include
+    ${CMAKE_SOURCE_DIR}/chess_pieces_logic/include
+    ${CMAKE_SOURCE_DIR}/chess_event_system/include
+)
+
 # Dependencies
-target_link_libraries(ctu PUBLIC cci)
+target_link_libraries(ctu PUBLIC cci cbm)
 
 # Compiler-specific options
 if(MSVC)
