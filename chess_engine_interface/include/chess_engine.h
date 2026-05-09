@@ -14,9 +14,11 @@
 
 #include "grid.h"
 #include "move.h"
+#include <array>
 #include <memory>
 #include <vector>
 #include <chrono>
+#include <unordered_map>
 
 namespace Chess
 {
@@ -95,6 +97,21 @@ namespace Chess
       int evaluate_material(const Grid& grid);
 
     private:
+      enum class TTBound
+      {
+          EXACT,
+          LOWER,
+          UPPER
+      };
+
+      struct TTEntry
+      {
+          int     depth = -1;
+          int     score = 0;
+          TTBound bound = TTBound::EXACT;
+          Move    best_move;
+      };
+
       int difficulty_level_;                         ///< Current engine difficulty (1-10)
       
       // Search statistics
@@ -102,23 +119,29 @@ namespace Chess
       std::chrono::milliseconds total_search_time_;  ///< Total time spent searching
       uint64_t searches_performed_;                  ///< Number of searches performed
 
+      // Active search state
+      std::chrono::steady_clock::time_point search_start_time_;
+      SearchLimits current_limits_;
+      uint64_t nodes_searched_current_ = 0;
+      std::unordered_map<uint64_t, TTEntry> transposition_table_;
+
       /// @brief Minimax search with alpha-beta pruning.
-      /// @param grid Current position.
+      /// @param grid Current position (mutated in-place via apply/undo, restored before return).
       /// @param depth Current search depth.
       /// @param alpha Alpha value for pruning.
       /// @param beta Beta value for pruning.
       /// @param maximizing True if maximizing player.
       /// @param limits Search constraints.
       /// @return Evaluation score.
-      int minimax(const Grid& grid, int depth, int alpha, int beta, bool maximizing, 
-                  const SearchLimits& limits);
+      int minimax(Grid& grid, int depth, int alpha, int beta, bool maximizing,
+          const SearchLimits& limits, uint64_t hash_key);
 
       /// @brief Quiescence search for tactical positions.
-      /// @param grid Current position.
+      /// @param grid Current position (mutated in-place via apply/undo, restored before return).
       /// @param alpha Alpha value for pruning.
       /// @param beta Beta value for pruning.
       /// @return Quiescence evaluation score.
-      int quiescence_search(const Grid& grid, int alpha, int beta);
+      int quiescence_search(Grid& grid, int alpha, int beta, uint64_t hash_key);
 
       
       /// @brief Evaluate piece positions and mobility.
@@ -143,6 +166,37 @@ namespace Chess
       /// @return True if time limit exceeded.
       bool is_time_limit_exceeded(const std::chrono::steady_clock::time_point& start_time,
                                   const SearchLimits& limits) const;
+
+      /// @brief Check global search stop conditions (time/node caps).
+      bool should_stop_search() const;
+
+      /// @brief Compute deterministic hash for current position.
+      uint64_t compute_position_hash(const Grid& grid) const;
+
+      /// @brief Incrementally update Zobrist hash after an applied move.
+      uint64_t update_zobrist_hash_for_move(uint64_t parent_hash,
+                    const Move& move,
+                    const UndoRecord& undo,
+                    const Grid& grid_after_move) const;
+
+      /// @brief Probe transposition table.
+      bool probe_transposition(uint64_t key,
+               int depth,
+               int alpha,
+               int beta,
+               int& score_out,
+               Move* best_move_out = nullptr) const;
+
+      /// @brief Store transposition table entry.
+      void store_transposition(uint64_t key,
+               int depth,
+               int score,
+               TTBound bound,
+               const Move& best_move);
+
+      std::array<std::array<std::array<uint64_t, 64>, 6>, 2> zobrist_piece_table_{};
+      uint64_t zobrist_side_to_move_ = 0;
+      std::array<uint64_t, 4> zobrist_castling_rights_{};
   };
 
 } // namespace Chess
