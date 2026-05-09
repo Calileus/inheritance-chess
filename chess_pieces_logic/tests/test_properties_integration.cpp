@@ -1,4 +1,5 @@
 /// @file      test_properties_integration.cpp
+/// @namespace Chess
 /// @brief     Unit tests for Properties integration in CPL pieces.
 /// @author    Calileus
 /// @date      2026-01-22
@@ -15,7 +16,7 @@
 
 #include "../include/chess_pawn.h"
 #include "../include/chess_king.h"
-#include "../../cci/include/grid.h"
+#include "../../chess_common_interface/include/grid.h"
 
 /// @class   PropertiesIntegrationTest
 /// @brief   Test fixture class for Properties integration tests.
@@ -77,7 +78,7 @@ TEST_F(PropertiesIntegrationTest, EnPassantPropertiesIntegration)
   black_pawn.type     = Chess::PieceType::PAWN;
   black_pawn.color    = Chess::Color::BLACK;
   black_pawn.position = Chess::Position(3, 4); // d5 - black pawn (rank index 4 for rank 5)
-  test_grid.set_piece_for_test(Chess::Position(3, 4), black_pawn);
+  test_grid.set_piece(Chess::Position(3, 4), black_pawn);
 
   other_pieces = {
       Chess::Position(3, 4) // d5 - black pawn (rank index 4 for rank 5)
@@ -113,7 +114,7 @@ TEST_F(PropertiesIntegrationTest, EnPassantExpiredWhenHalfmoveClockNonZero)
   black_pawn.type     = Chess::PieceType::PAWN;
   black_pawn.color    = Chess::Color::BLACK;
   black_pawn.position = Chess::Position(3, 4); // d5 - black pawn (rank index 4 for rank 5)
-  test_grid.set_piece_for_test(Chess::Position(3, 4), black_pawn);
+  test_grid.set_piece(Chess::Position(3, 4), black_pawn);
 
   other_pieces = {
       Chess::Position(3, 4) // d5 - black pawn (rank index 4 for rank 5)
@@ -204,10 +205,18 @@ TEST_F(PropertiesIntegrationTest, CastlingDisabledWhenRightsLost)
   expected_moves.push_back(Chess::Position(5, 1)); // f2
 
   EXPECT_EQ(moves.size(), expected_moves.size());
-  for (size_t i = 0; i < expected_moves.size(); i++)
+  for (const auto& expected : expected_moves)
   {
-    EXPECT_EQ(moves[i].file, expected_moves[i].file);
-    EXPECT_EQ(moves[i].rank, expected_moves[i].rank);
+    bool found = false;
+    for (const auto& move : moves)
+    {
+      if (move.file == expected.file && move.rank == expected.rank)
+      {
+        found = true;
+        break;
+      }
+    }
+    EXPECT_TRUE(found);
   }
 }
 

@@ -22,5 +22,18 @@ class QueenMovesTest : public ::testing::Test
 
 TEST_F(QueenMovesTest, QueenCombinedMoves)
 {
-  // TODO: Test queen combining rook and bishop moves
+  Grid grid;
+  grid.initialize_standard_position();
+  for (int file = 0; file < 8; ++file)
+  {
+    for (int rank = 0; rank < 8; ++rank)
+    {
+      grid.set_piece(Position(file, rank), std::nullopt);
+    }
+  }
+
+  grid.set_piece(Position(3, 3), PieceProperties{PieceType::QUEEN, Color::WHITE, Position(3, 3), true, false});
+
+  const auto moves = logic.list_raw_logical_moves(grid, Position(3, 3));
+  EXPECT_EQ(moves.size(), 27);
 }

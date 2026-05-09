@@ -1,4 +1,4 @@
-/// @file      chess_queen.cpp
+﻿/// @file      chess_queen.cpp
 /// @namespace Chess
 /// @brief     Chess Pieces Logic (CPL) - Queen Implementation.
 /// @author    Calileus
@@ -57,6 +57,7 @@ namespace Chess
                                  const ColorList& other_colors,
                                  const Grid& grid) const
   {
+      (void)grid;
       moves.clear();
       
       if (other_positions.size() != other_colors.size())
@@ -93,6 +94,17 @@ namespace Chess
                       moves.push_back(target_pos); // Can capture
                   }
                   break; // Can't move further in this direction
+              }
+
+              // If target square is occupied, only capture opponent and then stop this ray.
+              auto target_it = std::find(other_positions.begin(), other_positions.end(), target_pos);
+              if (target_it != other_positions.end())
+              {
+                  if (can_move_to(target_pos, other_positions, other_colors))
+                  {
+                      moves.push_back(target_pos);
+                  }
+                  break;
               }
 
               // Path is clear, add this position as a valid move
@@ -163,3 +175,5 @@ namespace Chess
   }
 
 } // namespace Chess
+
+

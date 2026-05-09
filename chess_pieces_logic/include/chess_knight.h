@@ -6,7 +6,8 @@
 /// @copyright 2026 Obsidian Honor Coders. Licensed under Apache 2.0.
 /// @see       https://github.com/ObsidianHonorCoders/inheritance-chess
 /// @details   Defines the ChessKnight class that implements knight-specific movement
-///            rules in the CPL module, adapted from existing Knight implementation.
+///            rules in the CPL module: L-shaped jumps to up to eight target squares,
+///            ignoring intervening pieces.
 
 #ifndef ICHESS_CPL_CHESS_KNIGHT
 #define ICHESS_CPL_CHESS_KNIGHT

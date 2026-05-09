@@ -1,4 +1,4 @@
-/// @file      chess_knight.cpp
+﻿/// @file      chess_knight.cpp
 /// @namespace Chess
 /// @brief     Chess Pieces Logic (CPL) - Knight Implementation.
 /// @author    Calileus
@@ -57,6 +57,7 @@ namespace Chess
                                  const ColorList& other_colors,
                                  const Grid& grid) const
   {
+      (void)grid;
       moves.clear();
       
       if (other_positions.size() != other_colors.size())
@@ -105,3 +106,5 @@ namespace Chess
   }
 
 } // namespace Chess
+
+

@@ -14,6 +14,7 @@
 
 #include "grid.h"
 #include "move.h"
+#include <cstdint>
 #include <vector>
 #include <memory>
 
@@ -37,6 +38,22 @@ namespace Chess
       /// @brief Get all raw logical moves from a position.
       std::vector<Move> list_raw_logical_moves(const Grid& grid, Position position) const;
 
+      /// @brief Build a cached occupied-square snapshot for one move-generation pass.
+      /// @param grid Grid to scan.
+      /// @param positions Output occupied positions.
+      /// @param colors Output colors for positions (same index mapping as positions).
+      void build_piece_cache(const Grid& grid, PositionList& positions, ColorList& colors) const;
+
+      /// @brief Get raw logical moves from a position using a prebuilt occupancy cache.
+      /// @param grid Grid reference.
+      /// @param position Origin square.
+      /// @param positions Cached occupied positions from build_piece_cache.
+      /// @param colors Cached colors corresponding to positions.
+      std::vector<Move> list_raw_logical_moves_cached(const Grid&             grid,
+                      Position                position,
+                      const PositionList&     positions,
+                      const ColorList&        colors) const;
+
       /// @brief Check if a square is attacked by a color.
       bool is_square_attacked(const Grid& grid, Position square, Color by_color) const;
 
@@ -55,9 +72,17 @@ namespace Chess
       std::vector<Move> get_king_moves(const Grid& grid, Position pos) const;
 
       // Helper methods
-      /// @brief Calculate sliding piece moves in given directions.
-      std::vector<Move>
-      get_sliding_moves(const Grid& grid, Position pos, const std::vector<std::pair<int, int>>& directions) const;
+        /// @brief Reuse cached board occupancy snapshot for repeated per-position queries.
+        void get_or_build_cached_board_data(const Grid& grid,
+                          const PositionList*& positions,
+                          const ColorList*& colors) const;
+
+        mutable bool cache_valid_ = false;
+        mutable uint64_t cache_occupied_ = 0;
+        mutable uint64_t cache_white_occupied_ = 0;
+        mutable uint64_t cache_black_occupied_ = 0;
+        mutable PositionList cached_positions_;
+        mutable ColorList cached_colors_;
   };
 
 } // namespace Chess

@@ -6,7 +6,8 @@
 /// @copyright 2026 Obsidian Honor Coders. Licensed under Apache 2.0.
 /// @see       https://github.com/ObsidianHonorCoders/inheritance-chess
 /// @details   Defines the ChessBishop class that implements bishop-specific movement
-///            rules in the CPL module, adapted from existing Bishop implementation.
+///            rules in the CPL module: diagonal sliding in all four directions,
+///            blocked by intervening pieces.
 
 #ifndef ICHESS_CPL_CHESS_BISHOP
 #define ICHESS_CPL_CHESS_BISHOP

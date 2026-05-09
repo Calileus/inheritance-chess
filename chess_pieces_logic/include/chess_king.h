@@ -6,7 +6,8 @@
 /// @copyright 2026 Obsidian Honor Coders. Licensed under Apache 2.0.
 /// @see       https://github.com/ObsidianHonorCoders/inheritance-chess
 /// @details   Defines the ChessKing class that implements king-specific movement
-///            rules in the CPL module, adapted from existing King implementation.
+///            rules in the CPL module: one square in any direction, plus kingside
+///            and queenside castling when the relevant rights flags are set.
 
 #ifndef ICHESS_CPL_CHESS_KING
 #define ICHESS_CPL_CHESS_KING

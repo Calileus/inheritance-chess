@@ -1,28 +1,31 @@
 /// @file      test_chess_pawn.cpp
+/// @namespace Chess
 /// @brief     Unit tests for ChessPawn class using Google Test framework.
 /// @author    Calileus
 /// @date      2026-01-22
 /// @copyright 2026 Obsidian Honor Coders. Licensed under Apache 2.0.
 /// @see       https://github.com/ObsidianHonorCoders/inheritance-chess
-/// @details   Test suite for ChessPawn class functionality adapted from existing test_pawns.cpp:
-///             - ChessPawn creation and initialization
-///             - Single and double step forward movement
-///             - Diagonal capture moves
-///             - En passant capture moves
-/// @note      Uses std::unique_ptr for automatic memory management
-///            following modern C++ RAII principles adapted from existing tests.
+/// @details   Test suite covering ChessPawn movement logic:
+///             - Construction and initial property values
+///             - Single and double-step forward movement from starting rank
+///             - Single-step restriction from non-starting ranks
+///             - Diagonal capture and own-piece capture prevention
+///             - En passant capture for both white and black
+///             - Blocked forward movement and position mutation
+/// @note      Each test pawn is heap-allocated via std::unique_ptr and released
+///            explicitly in TearDown to verify reset semantics.
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
 #include "../include/chess_pawn.h"
-#include "../../cci/include/grid.h"
+#include "../../chess_common_interface/include/grid.h"
 
 /// @class   ChessPawnTest
 /// @brief   Test fixture class for ChessPawn unit tests.
-/// @details Provides setup and teardown methods for test environment.
-///          Uses smart pointers for automatic memory management.
-///          Adapted from existing PawnTest patterns.
+/// @details Pre-constructs six ChessPawn instances at starting positions (e2/e7),
+///          mid-board positions (e4/e5), and en passant positions (e5/e4) so
+///          each test can exercise move logic without repeated setup code.
 class ChessPawnTest : public ::testing::Test
 {
   protected:
@@ -31,7 +34,7 @@ class ChessPawnTest : public ::testing::Test
     Chess::Grid test_grid;
 
     /// @brief   Available moves vector for test results.
-    /// @details Populated by pawn's available_moves() method during testing.
+    /// @details Populated by a pawn’s available_moves() call during testing.
     Chess::PositionList moves = {};
 
     /// @brief   Expected moves vector for test validation.
@@ -71,11 +74,9 @@ class ChessPawnTest : public ::testing::Test
     std::unique_ptr<Chess::ChessPawn> p_e4_black_pawn;
 
     /// @brief   Set up test environment before each test.
-    /// @details Creates new ChessPawn instances at various positions for comprehensive testing:
-    ///          - e2/e7: Starting positions for forward movement tests
-    ///          - e4/e5: Mid-board positions for single-step tests
-    ///          - e5/e4: En passant positions for capture tests
-    ///          Adapted from existing PawnTest SetUp() pattern.
+    /// @details Constructs six ChessPawn instances at predefined positions,
+    ///          initializes test_grid to the standard opening position, and
+    ///          resets the auxiliary move vectors to empty.
     void SetUp() override
     {
       // Initialize grid to standard position
@@ -107,7 +108,8 @@ class ChessPawnTest : public ::testing::Test
 };
 
 /// @test   Verify ChessPawn creation and basic properties.
-/// @details Adapted from existing CreationState test pattern.
+/// @details Checks get_type(), get_color(), get_position(), and get_representation()
+///          for both a white pawn at e2 and a black pawn at e7.
 TEST_F(ChessPawnTest, CreationState)
 {
   // Test white pawn creation
@@ -124,10 +126,11 @@ TEST_F(ChessPawnTest, CreationState)
 }
 
 /// @test   Verify single and double step forward movement from starting position.
-/// @details Adapted from existing StartStepForward test pattern.
+/// @details From the starting rank, available_moves() should return exactly two
+///          positions: one square and two squares forward. Verified for both
+///          the white pawn at e2 and the black pawn at e7.
 TEST_F(ChessPawnTest, StartStepForward)
 {
-  // Clear test vectors (adapted from existing pattern)
   moves          = {};
   expected_moves = {};
   other_pieces   = {};
@@ -166,10 +169,10 @@ TEST_F(ChessPawnTest, StartStepForward)
 }
 
 /// @test   Verify single step forward movement from non-starting position.
-/// @details Adapted from existing NoDoubleStepFromNonStartPosition test pattern.
+/// @details From a non-starting rank, available_moves() should return exactly
+///          one position: one square forward. Verified for white (e4) and black (e5).
 TEST_F(ChessPawnTest, SingleStepFromNonStartPosition)
 {
-  // Clear test vectors (adapted from existing pattern)
   moves          = {};
   expected_moves = {};
   other_pieces   = {};
@@ -206,10 +209,10 @@ TEST_F(ChessPawnTest, SingleStepFromNonStartPosition)
 }
 
 /// @test   Verify diagonal capture moves.
-/// @details Adapted from existing DiagonalCapture test pattern.
+/// @details With opponent pawns on d5 and f5, the white pawn at e4 should
+///          return three moves: one forward (e5) plus two diagonal captures.
 TEST_F(ChessPawnTest, DiagonalCapture)
 {
-  // Clear test vectors (adapted from existing pattern)
   moves          = {};
   expected_moves = {};
 
@@ -237,10 +240,10 @@ TEST_F(ChessPawnTest, DiagonalCapture)
 }
 
 /// @test   Verify pawns cannot capture own-colored pieces.
-/// @details Adapted from existing CannotCaptureOwnPieces test pattern.
+/// @details With same-color pawns on d5 and f5, the white pawn at e4 should
+///          return only the forward move (e5); no captures.
 TEST_F(ChessPawnTest, CannotCaptureOwnPieces)
 {
-  // Clear test vectors (adapted from existing pattern)
   moves          = {};
   expected_moves = {};
 
@@ -266,10 +269,11 @@ TEST_F(ChessPawnTest, CannotCaptureOwnPieces)
 }
 
 /// @test   Verify en passant capture moves for white pawns.
-/// @details Adapted from existing EnPassantCaptureWhite test pattern.
+/// @details With halfmove_clock == 0 and a black pawn at d5 flagged via
+///          set_piece(), the white pawn at e5 should include d6 as an
+///          en passant capture alongside the regular e6 forward move.
 TEST_F(ChessPawnTest, EnPassantCaptureWhite)
 {
-  // Clear test vectors (adapted from existing pattern)
   moves          = {};
   expected_moves = {};
   other_pieces   = {};
@@ -284,7 +288,7 @@ TEST_F(ChessPawnTest, EnPassantCaptureWhite)
   black_pawn.type     = Chess::PieceType::PAWN;
   black_pawn.color    = Chess::Color::BLACK;
   black_pawn.position = Chess::Position(3, 4); // d5 - black pawn (rank index 4 for rank 5)
-  test_grid.set_piece_for_test(Chess::Position(3, 4), black_pawn);
+  test_grid.set_piece(Chess::Position(3, 4), black_pawn);
 
   other_pieces = {
       Chess::Position(3, 4) // d5 - black pawn
@@ -306,38 +310,38 @@ TEST_F(ChessPawnTest, EnPassantCaptureWhite)
 }
 
 /// @test   Verify en passant capture moves for black pawns.
-/// @details Adapted from existing EnPassantCaptureBlack test pattern.
+/// @details With halfmove_clock == 0 and a white pawn at d4 marked
+///          en_passant_vulnerable, a black pawn at e4 should include d3
+///          as an en passant capture alongside the regular e3 forward move.
 TEST_F(ChessPawnTest, EnPassantCaptureBlack)
 {
-  // Clear test vectors (adapted from existing pattern)
   moves          = {};
   expected_moves = {};
   other_pieces   = {};
   other_colors   = {};
 
-  // Set up en passant scenario: black pawn at e5, white pawn just moved from e2 to e4
+  // Set up en passant scenario: black pawn at e4, white pawn just moved to d4
   test_grid.flags.halfmove_clock = 0; // Indicates a pawn just moved
 
-  // Place a white pawn at e4 on the grid (position that just moved two squares)
+    // Place a white pawn at d4 on the grid (position that just moved two squares)
   Chess::PieceProperties white_pawn;
   white_pawn.type     = Chess::PieceType::PAWN;
   white_pawn.color    = Chess::Color::WHITE;
-  white_pawn.position = Chess::Position(4, 3); // e4 - white pawn (rank index 3 for rank 4)
+    white_pawn.position = Chess::Position(3, 3); // d4 - white pawn (rank index 3 for rank 4)
   white_pawn.en_passant_vulnerable = true; // This pawn is vulnerable to en passant
-  test_grid.set_piece_for_test(Chess::Position(4, 3), white_pawn);
+    test_grid.set_piece(Chess::Position(3, 3), white_pawn);
 
   other_pieces = {
-      Chess::Position(4, 3) // e4 - white pawn
+      Chess::Position(3, 3) // d4 - white pawn
   };
   other_colors = {Chess::Color::WHITE};
 
-  // Create a black pawn at e5 (instead of e4) for proper en passant setup
-  auto p_e5_black_temp = std::make_unique<Chess::ChessPawn>(Chess::Color::BLACK, Chess::Position(4, 4));
-  p_e5_black_temp->available_moves(moves, other_pieces, other_colors, test_grid);
+    auto p_e4_black_temp = std::make_unique<Chess::ChessPawn>(Chess::Color::BLACK, Chess::Position(4, 3));
+    p_e4_black_temp->available_moves(moves, other_pieces, other_colors, test_grid);
 
-  // Black pawn should be able to capture en passant at e3
-  expected_moves.push_back(Chess::Position(4, 2)); // e3 (forward)
-  expected_moves.push_back(Chess::Position(4, 3)); // e4 (en passant capture)
+    // Black pawn should be able to move to e3 and capture en passant on d3
+    expected_moves.push_back(Chess::Position(4, 2)); // e3 (forward)
+    expected_moves.push_back(Chess::Position(3, 2)); // d3 (en passant capture)
 
   EXPECT_EQ(moves.size(), expected_moves.size());
   for (size_t i = 0; i < expected_moves.size(); i++)
@@ -348,10 +352,10 @@ TEST_F(ChessPawnTest, EnPassantCaptureBlack)
 }
 
 /// @test   Verify pawn movement is blocked by pieces in front.
-/// @details Adapted from existing blocking patterns.
+/// @details With a black pawn on e3 blocking the forward square, the white
+///          pawn at e2 should return no valid moves.
 TEST_F(ChessPawnTest, BlockedForwardMovement)
 {
-  // Clear test vectors (adapted from existing pattern)
   moves          = {};
   expected_moves = {};
 
@@ -371,7 +375,9 @@ TEST_F(ChessPawnTest, BlockedForwardMovement)
 }
 
 /// @test   Verify pawn position setting works correctly.
-/// @details Adapted from existing position management patterns.
+/// @details Calls set_position() to relocate a pawn to g3 (a non-starting rank)
+///          and confirms get_position() reflects the new square and
+///          available_moves() returns only the single forward move.
 TEST_F(ChessPawnTest, PositionManagement)
 {
   // Test position setting
@@ -388,9 +394,8 @@ TEST_F(ChessPawnTest, PositionManagement)
 
   p_e2_white_pawn->available_moves(moves, other_pieces, other_colors, test_grid);
 
-  // From g2, should be able to move to g3 and g4 (still starting position)
+  // From g3 (rank index 2), should only be able to move one square to g4
   expected_moves.push_back(Chess::Position(6, 3)); // g3
-  expected_moves.push_back(Chess::Position(6, 4)); // g4
 
   EXPECT_EQ(moves.size(), expected_moves.size());
   for (size_t i = 0; i < expected_moves.size(); i++)

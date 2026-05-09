@@ -6,7 +6,8 @@
 /// @copyright 2026 Obsidian Honor Coders. Licensed under Apache 2.0.
 /// @see       https://github.com/ObsidianHonorCoders/inheritance-chess
 /// @details   Defines the ChessPawn class that implements pawn-specific movement
-///            rules in the CPL module, adapted from existing Pawn implementation.
+///            rules in the CPL module: forward steps, double push from the
+///            starting rank, diagonal captures, and en passant.
 
 #ifndef ICHESS_CPL_CHESS_PAWN
 #define ICHESS_CPL_CHESS_PAWN
@@ -19,8 +20,9 @@ namespace Chess
 
   /// @class ChessPawn
   /// @brief Represents a Pawn chess piece in the CPL module.
-  /// @details Inherits from ChessPiece and implements pawn-specific movement rules.
-  ///          Adapted from existing Pawn class to work with CCI namespace and Grid structure.
+  /// @details Inherits from ChessPiece and implements pawn-specific movement rules:
+  ///          forward steps, double push from the starting rank, diagonal captures,
+  ///          and en passant. Direction is determined by color (+1 WHITE, -1 BLACK).
   class ChessPawn : public ChessPiece
   {
   public:
@@ -57,7 +59,11 @@ namespace Chess
       /// @param[in] other_positions Vector of positions of all other pieces on the board.
       /// @param[in] other_colors Vector of colors corresponding to each piece in other_positions.
       /// @param[in] grid Current grid state for move validation.
-      /// @details Adapted from existing Pawn::available_moves implementation.
+      /// @details Computes all legal destination squares for this pawn: one step
+      ///          forward if unblocked, two steps forward from the starting rank,
+      ///          diagonal captures onto opponent-occupied squares, and en passant
+      ///          captures when the halfmove clock is 0 and the adjacent pawn is
+      ///          on the expected en passant rank.
       virtual void available_moves(PositionList& moves,
                                  const PositionList& other_positions,
                                  const ColorList& other_colors,
@@ -69,7 +75,7 @@ namespace Chess
 
       /// @brief Get the movement direction for a pawn based on its color.
       /// @return 1 for white pawns (move up), -1 for black pawns (move down).
-      /// @details Adapted from existing get_direction function.
+      /// @details Returns +1 for WHITE (ranks increase) or -1 for BLACK (ranks decrease).
       int get_direction() const;
 
       /// @brief Check if a pawn can capture at the target position.
@@ -77,7 +83,8 @@ namespace Chess
       /// @param other_colors Vector of colors corresponding to each piece in other_positions.
       /// @param target_pos The target position to check for capture.
       /// @return True if the target position contains an opponent piece that can be captured.
-      /// @details Adapted from existing try_to_capture function.
+      /// @details Scans other_positions for target_pos and returns true only if
+      ///          the corresponding color differs from this pawn’s color.
       bool can_capture(const PositionList& other_positions,
                       const ColorList& other_colors,
                       const Position& target_pos) const;
@@ -86,7 +93,9 @@ namespace Chess
       /// @param grid Current grid state for move validation.
       /// @param target_pos The target position where en passant capture would occur.
       /// @return True if en passant capture is valid at the target position.
-      /// @details Adapted from existing try_to_capture_passant function.
+      /// @details Checks halfmove_clock == 0, verifies an opponent pawn at the
+      ///          square one rank behind target_pos, and confirms it is on the
+      ///          expected en passant rank (rank 4 for white capturing, rank 3 for black).
       bool can_capture_en_passant(const Grid& grid, const Position& target_pos) const;
 
       /// @brief Check if the pawn is in its starting position.

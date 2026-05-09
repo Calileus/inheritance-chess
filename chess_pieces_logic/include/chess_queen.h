@@ -6,7 +6,8 @@
 /// @copyright 2026 Obsidian Honor Coders. Licensed under Apache 2.0.
 /// @see       https://github.com/ObsidianHonorCoders/inheritance-chess
 /// @details   Defines the ChessQueen class that implements queen-specific movement
-///            rules in the CPL module, adapted from existing Queen implementation.
+///            rules in the CPL module: combined rook and bishop sliding in all
+///            eight directions, blocked by intervening pieces.
 
 #ifndef ICHESS_CPL_CHESS_QUEEN
 #define ICHESS_CPL_CHESS_QUEEN

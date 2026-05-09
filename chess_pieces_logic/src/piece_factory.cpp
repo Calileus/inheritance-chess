@@ -1,12 +1,12 @@
-/// @file      piece_factory.cpp
+﻿/// @file      piece_factory.cpp
 /// @namespace Chess
 /// @brief     Chess Common Interface (CCI) - Piece Factory Implementation.
 /// @author    Calileus
 /// @date      2026-01-22
 /// @copyright 2026 Obsidian Honor Coders. Licensed under Apache 2.0.
 /// @see       https://github.com/ObsidianHonorCoders/inheritance-chess
-/// @details   Implementation of piece factory and smart pointer patterns
-///            adapted from existing Piece creation patterns.
+/// @details   Implementation of the create_piece() factory function and the
+///            PieceList overload of ChessPiece::available_moves().
 
 #include "grid.h"
 #include "chess_pawn.h"
@@ -20,12 +20,12 @@
 namespace Chess
 {
 
-    /// @brief Implementation of ChessPiece::available_moves using PieceList parameter.
-    /// @details Extracts positions and colors from PieceList and calls pure virtual overload.
-    ///          Adapted from existing Piece::available_moves pattern.
+    /// @brief Convert PieceList input to position/color lists and delegate move generation.
+    /// @details Extracts positions and colors from PieceList into parallel vectors
+    ///          then delegates to the pure virtual (PositionList, ColorList) overload.
     void ChessPiece::available_moves(PositionList& moves, const PieceList& other, const Grid& grid) const
     {
-        // Extract positions and colors from PieceList (adapted from existing pattern)
+        // Extract positions and colors from PieceList.
         PositionList other_positions;
         ColorList other_colors;
         
@@ -45,16 +45,10 @@ namespace Chess
         available_moves(moves, other_positions, other_colors, grid);
     }
 
-    /// @brief Factory function implementation for creating chess pieces.
-    /// @details Factory pattern adapted from existing piece creation patterns.
-    ///          Uses smart pointers for automatic memory management.
+    /// @brief Factory function that constructs the concrete piece subclass for
+    ///        the given type, color, and position and returns it as unique_ptr<ChessPiece>.
     std::unique_ptr<ChessPiece> create_piece(PieceType type, Color color, const Position& pos)
     {
-        // Phase 2 implementation - create concrete piece types
-        // This follows the existing pattern from piece creation in the original codebase
-        // where pieces were created with specific constructors like:
-        // auto pawn = std::make_unique<Pawn>('e', '2', Piece::Color::WHITE);
-        
         switch (type)
         {
             case PieceType::PAWN:
@@ -75,3 +69,5 @@ namespace Chess
     }
 
 } // namespace Chess
+
+

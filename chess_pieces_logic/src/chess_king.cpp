@@ -1,4 +1,4 @@
-/// @file      chess_king.cpp
+﻿/// @file      chess_king.cpp
 /// @namespace Chess
 /// @brief     Chess Pieces Logic (CPL) - King Implementation.
 /// @author    Calileus
@@ -181,8 +181,6 @@ namespace Chess
           return false; // No rook found
       }
 
-      // Check if the piece is actually a rook of the same color
-      size_t index = std::distance(other_positions.begin(), it);
       // Note: In a full implementation, we'd need to check piece types
       // For now, we assume it's a rook if it's at the correct position
 
@@ -190,3 +188,5 @@ namespace Chess
   }
 
 } // namespace Chess
+
+

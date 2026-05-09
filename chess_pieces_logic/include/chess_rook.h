@@ -6,7 +6,8 @@
 /// @copyright 2026 Obsidian Honor Coders. Licensed under Apache 2.0.
 /// @see       https://github.com/ObsidianHonorCoders/inheritance-chess
 /// @details   Defines the ChessRook class that implements rook-specific movement
-///            rules in the CPL module, adapted from existing Rook implementation.
+///            rules in the CPL module: horizontal and vertical sliding along files
+///            and ranks, blocked by intervening pieces.
 
 #ifndef ICHESS_CPL_CHESS_ROOK
 #define ICHESS_CPL_CHESS_ROOK
