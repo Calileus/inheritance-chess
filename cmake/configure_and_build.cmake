@@ -26,7 +26,6 @@ endif()
 file(MAKE_DIRECTORY "${BUILD_DIR}")
 
 include(${CMAKE_CURRENT_LIST_DIR}/detect_generator.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/nmake_env_helpers.cmake)
 
 message(STATUS "Build Type:    ${CMAKE_BUILD_TYPE}")
 message(STATUS "Build Dir:     ${BUILD_DIR}")
@@ -45,40 +44,14 @@ set(CONFIG_COMMAND
 if(NOT "${GENERATOR}" STREQUAL "")
     list(APPEND CONFIG_COMMAND -G "${GENERATOR}")
 endif()
-if(PLATFORM)
-    list(APPEND CONFIG_COMMAND ${PLATFORM})
-endif()
 
-# Avoid inheriting machine-local vcpkg integration from developer environments.
-set(_PREV_VCPKG_LOCALAPPDATA_DISABLED "$ENV{VCPkgLocalAppDataDisabled}")
-set(ENV{VCPkgLocalAppDataDisabled} 1)
-
-set(_USE_VSDEVCMD_WRAPPER OFF)
-set(_CONFIG_WRAPPER "")
-if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows"
-   AND GENERATOR STREQUAL "NMake Makefiles"
-   AND DEFINED VS_DEVCMD
-   AND EXISTS "${VS_DEVCMD}")
-    set(_USE_VSDEVCMD_WRAPPER ON)
-    set(_CONFIG_WRAPPER "${BUILD_DIR}/nmake_configure.cmd")
-    create_vsdevcmd_wrapper_from_list("${_CONFIG_WRAPPER}" CONFIG_COMMAND)
-endif()
-
-run_with_optional_vsdevcmd_wrapper(
-    ${_USE_VSDEVCMD_WRAPPER}
-    "${_CONFIG_WRAPPER}"
-    CONFIG_COMMAND
-    "${ROOT_DIR}"
-    CONFIG_RESULT
-    CONFIG_OUTPUT
-    CONFIG_ERROR
+execute_process(
+    COMMAND ${CONFIG_COMMAND}
+    WORKING_DIRECTORY ${ROOT_DIR}
+    RESULT_VARIABLE CONFIG_RESULT
+    OUTPUT_VARIABLE CONFIG_OUTPUT
+    ERROR_VARIABLE CONFIG_ERROR
 )
-
-if(_PREV_VCPKG_LOCALAPPDATA_DISABLED STREQUAL "")
-    unset(ENV{VCPkgLocalAppDataDisabled})
-else()
-    set(ENV{VCPkgLocalAppDataDisabled} "${_PREV_VCPKG_LOCALAPPDATA_DISABLED}")
-endif()
 
 if(NOT CONFIG_RESULT EQUAL 0)
     message(FATAL_ERROR "CMAKE CONFIGURATION FAILED\n${CONFIG_OUTPUT}\n${CONFIG_ERROR}")
@@ -100,36 +73,13 @@ set(BUILD_COMMAND
 )
 message(STATUS "Building with ${NUM_CORES} parallel cores...")
 
-# Avoid inheriting machine-local vcpkg integration from developer environments.
-set(_PREV_VCPKG_LOCALAPPDATA_DISABLED "$ENV{VCPkgLocalAppDataDisabled}")
-set(ENV{VCPkgLocalAppDataDisabled} 1)
-
-set(_USE_VSDEVCMD_WRAPPER OFF)
-set(_BUILD_WRAPPER "")
-if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows"
-   AND GENERATOR STREQUAL "NMake Makefiles"
-   AND DEFINED VS_DEVCMD
-   AND EXISTS "${VS_DEVCMD}")
-    set(_USE_VSDEVCMD_WRAPPER ON)
-    set(_BUILD_WRAPPER "${BUILD_DIR}/nmake_build.cmd")
-    create_vsdevcmd_wrapper_from_list("${_BUILD_WRAPPER}" BUILD_COMMAND)
-endif()
-
-run_with_optional_vsdevcmd_wrapper(
-    ${_USE_VSDEVCMD_WRAPPER}
-    "${_BUILD_WRAPPER}"
-    BUILD_COMMAND
-    "${ROOT_DIR}"
-    BUILD_RESULT
-    BUILD_OUTPUT
-    BUILD_ERROR
+execute_process(
+    COMMAND ${BUILD_COMMAND}
+    WORKING_DIRECTORY ${ROOT_DIR}
+    RESULT_VARIABLE BUILD_RESULT
+    OUTPUT_VARIABLE BUILD_OUTPUT
+    ERROR_VARIABLE BUILD_ERROR
 )
-
-if(_PREV_VCPKG_LOCALAPPDATA_DISABLED STREQUAL "")
-    unset(ENV{VCPkgLocalAppDataDisabled})
-else()
-    set(ENV{VCPkgLocalAppDataDisabled} "${_PREV_VCPKG_LOCALAPPDATA_DISABLED}")
-endif()
 
 if(NOT BUILD_RESULT EQUAL 0)
     message(FATAL_ERROR "BUILD FAILED with BUILD_RESULT ${BUILD_RESULT}\n${BUILD_OUTPUT}\n${BUILD_ERROR}")
