@@ -7,22 +7,66 @@ include(FetchContent)
 set(FETCHCONTENT_BASE_DIR "${CMAKE_SOURCE_DIR}/tests/build_gtest")
 FetchContent_Declare( googletest
                       URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+                      DOWNLOAD_EXTRACT_TIMESTAMP TRUE
                       EXCLUDE_FROM_ALL )
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
+include(GoogleTest)
 
-enable_testing()
+# Explicit test source lists — do NOT use file(GLOB); add new test files here manually.
+set(CCI_TEST_SOURCES
+    ../chess_common_interface/tests/test_main.cpp
+    ../chess_common_interface/tests/test_chess_types.cpp
+    ../chess_common_interface/tests/test_grid.cpp
+    ../chess_common_interface/tests/test_grid_adapted.cpp
+    ../chess_common_interface/tests/test_move.cpp
+    ../chess_common_interface/tests/test_piece_factory.cpp
+    ../chess_common_interface/tests/test_position.cpp
+)
 
-# New modular test support (CCI + CPL + CGH + CEI)
-file(GLOB CCI_TEST_SOURCES "../cci/tests/test_*.cpp")
-file(GLOB CPL_TEST_SOURCES "../cpl/tests/test_*.cpp")
-file(GLOB CGH_TEST_SOURCES "../cgh/tests/test_*.cpp")
-file(GLOB CEI_TEST_SOURCES "../cei/tests/test_*.cpp")
+set(CPL_TEST_SOURCES
+    ../chess_pieces_logic/tests/test_bishop.cpp
+    ../chess_pieces_logic/tests/test_chess_pawn.cpp
+    ../chess_pieces_logic/tests/test_king.cpp
+    ../chess_pieces_logic/tests/test_knight.cpp
+    ../chess_pieces_logic/tests/test_pawn.cpp
+    ../chess_pieces_logic/tests/test_pieces_logic.cpp
+    ../chess_pieces_logic/tests/test_properties_integration.cpp
+    ../chess_pieces_logic/tests/test_queen.cpp
+    ../chess_pieces_logic/tests/test_rook.cpp
+)
 
-add_executable("test_${EXE_NAME}" 
-    ${CCI_TEST_SOURCES} 
-    ${CPL_TEST_SOURCES} 
-    ${CGH_TEST_SOURCES} 
+set(CTU_TEST_SOURCES
+    ../chess_translation_unit/tests/test_fen_parsing.cpp
+    ../chess_translation_unit/tests/test_translation_unit.cpp
+)
+
+set(CBM_TEST_SOURCES
+    ../chess_board_manager/tests/test_board_manager.cpp
+    ../chess_board_manager/tests/test_validation.cpp
+)
+
+set(CGH_TEST_SOURCES
+    ../chess_game_handler/tests/test_game_handler.cpp
+    ../chess_game_handler/tests/test_integration.cpp
+    ../chess_game_handler/tests/test_performance.cpp
+)
+
+set(CES_TEST_SOURCES
+    ../chess_event_system/tests/test_event_system.cpp
+)
+
+set(CEI_TEST_SOURCES
+    ../chess_engine_interface/tests/test_chess_engine.cpp
+)
+
+add_executable("test_${EXE_NAME}"
+    ${CCI_TEST_SOURCES}
+    ${CPL_TEST_SOURCES}
+    ${CTU_TEST_SOURCES}
+    ${CBM_TEST_SOURCES}
+    ${CGH_TEST_SOURCES}
+    ${CES_TEST_SOURCES}
     ${CEI_TEST_SOURCES}
 )
 
@@ -42,30 +86,15 @@ target_link_libraries("test_${EXE_NAME}"
 
 # Include directories for modular components
 target_include_directories("test_${EXE_NAME}" PRIVATE 
-    "${CMAKE_SOURCE_DIR}/cci/include"
-    "${CMAKE_SOURCE_DIR}/cpl/include"
-    "${CMAKE_SOURCE_DIR}/cgh/include"
-    "${CMAKE_SOURCE_DIR}/cbm/include"
-    "${CMAKE_SOURCE_DIR}/ctu/include"
-    "${CMAKE_SOURCE_DIR}/ces/include"
-    "${CMAKE_SOURCE_DIR}/cei/include"
+    "${CMAKE_SOURCE_DIR}/chess_common_interface/include"
+    "${CMAKE_SOURCE_DIR}/chess_pieces_logic/include"
+    "${CMAKE_SOURCE_DIR}/chess_game_handler/include"
+    "${CMAKE_SOURCE_DIR}/chess_board_manager/include"
+    "${CMAKE_SOURCE_DIR}/chess_translation_unit/include"
+    "${CMAKE_SOURCE_DIR}/chess_event_system/include"
+    "${CMAKE_SOURCE_DIR}/chess_engine_interface/include"
 )
 
-# Future modular component tests (Phase 2) - structure ready
-# file(GLOB CBM_TEST_SOURCES "../cbm/tests/test_*.cpp")
-# file(GLOB CTU_TEST_SOURCES "../ctu/tests/test_*.cpp")
-# file(GLOB CGH_TEST_SOURCES "../cgh/tests/test_*.cpp")
-
-# target_sources("test_${EXE_NAME}" PRIVATE ${CBM_TEST_SOURCES} ${CTU_TEST_SOURCES} ${CGH_TEST_SOURCES})
-
-# target_include_directories("test_${EXE_NAME}" PRIVATE "${CMAKE_SOURCE_DIR}/cbm/include")
-# target_include_directories("test_${EXE_NAME}" PRIVATE "${CMAKE_SOURCE_DIR}/ctu/include")
-# target_include_directories("test_${EXE_NAME}" PRIVATE "${CMAKE_SOURCE_DIR}/cgh/include")
-
-# file(GLOB CBM_PROJECT_SOURCES "${CMAKE_SOURCE_DIR}/cbm/src/*.cpp")
-# file(GLOB CTU_PROJECT_SOURCES "${CMAKE_SOURCE_DIR}/ctu/src/*.cpp")
-# file(GLOB CGH_PROJECT_SOURCES "${CMAKE_SOURCE_DIR}/cgh/src/*.cpp")
-
-# target_sources("test_${EXE_NAME}" PRIVATE ${CBM_PROJECT_SOURCES} ${CTU_PROJECT_SOURCES} ${CGH_PROJECT_SOURCES})
-
-add_test(COMMAND "test_${EXE_NAME}" NAME "${EXE_NAME}_Tests")
+gtest_discover_tests("test_${EXE_NAME}"
+    DISCOVERY_MODE PRE_TEST
+)
