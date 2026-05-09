@@ -29,7 +29,15 @@ TEST_F(BoardManagerTest, InitialPositionNotInCheck)
 
 TEST_F(BoardManagerTest, ValidateMoveInitialPawn)
 {
-  Move pawn_move(Position(4, 1), Position(4, 3));
-  // TODO: Once implementation is complete
-  // EXPECT_TRUE(manager.validate_move(grid, pawn_move));
+  // Test valid initial pawn move: e2 to e4 (double-step from starting position)
+  Move valid_pawn_move(Position(4, 1), Position(4, 3));
+  EXPECT_TRUE(manager.validate_move(grid, valid_pawn_move));
+  
+  // Test invalid move: pawn backwards (e4 to e2) - should fail
+  Move invalid_backward_move(Position(4, 3), Position(4, 1));
+  EXPECT_FALSE(manager.validate_move(grid, invalid_backward_move));
+  
+  // Test invalid move: pawn two squares sideways - should fail
+  Move invalid_sideways_move(Position(4, 1), Position(6, 1));
+  EXPECT_FALSE(manager.validate_move(grid, invalid_sideways_move));
 }

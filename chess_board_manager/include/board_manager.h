@@ -20,6 +20,15 @@
 namespace Chess
 {
 
+  /// @enum DrawReason
+  /// @brief Explicit draw-reason contract reported by board rules.
+  enum class DrawReason
+  {
+    NONE,
+    INSUFFICIENT_MATERIAL,
+    FIFTY_MOVE_RULE
+  };
+
   /// @class   ChessBoardManager
   /// @brief   Manages chess board state and enforces game rules.
   /// @details The ChessBoardManager acts as a referee, enforcing the higher-level
@@ -40,6 +49,12 @@ namespace Chess
       /// @brief Check if current position is a draw.
       bool is_draw(const Grid& grid, Color color_turn) const;
 
+      /// @brief Determine explicit draw reason for current position.
+      /// @param grid Board position to evaluate.
+      /// @param color_turn Side to move (reserved for future rule variants).
+      /// @return Concrete draw reason or DrawReason::NONE.
+      DrawReason get_draw_reason(const Grid& grid, Color color_turn) const;
+
       /// @brief Validate if a move is legal (doesn't leave king in check).
       bool validate_move(const Grid& grid, const Move& move) const;
 
@@ -51,6 +66,11 @@ namespace Chess
 
       /// @brief Check if a specific king is in check on the board.
       bool is_king_in_check(const Grid& grid, Color king_color) const;
+
+      /// @brief Get all legal moves for the current player in the given position.
+      /// @param grid Grid to analyze for legal moves.
+      /// @return Vector of all legal moves (includes king-safety validation).
+      std::vector<Move> get_legal_moves(const Grid& grid) const;
 
     private:
       Grid current_board_;   ///< Current game board state

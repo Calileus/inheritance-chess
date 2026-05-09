@@ -16,7 +16,7 @@ target_include_directories(cbm PUBLIC
 )
 
 # Dependencies
-target_link_libraries(cbm PUBLIC cci)
+target_link_libraries(cbm PUBLIC cci cpl)
 
 # Compiler-specific options
 if(MSVC)
