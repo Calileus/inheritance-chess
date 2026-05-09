@@ -2,89 +2,82 @@
 
 ## Overview
 
-The Chess Common Interface (CCI) module is the foundation of the chess engine architecture. It defines all common data types, structures, and enumerations that are used across all other modules.
+`chess_common_interface` (CCI) defines the shared data model used across the project: colors, piece types, moves, positions, board state, and in-place apply/undo support.
 
-## Role: The "Common Language"
+CCI is intentionally logic-light and provides the canonical board representation used by CPL, CBM, CTU, CGH, and CEI.
 
-CCI is a **passive layer** that contains only data structures and definitions. Other modules depend on CCI but CCI doesn't depend on any other game logic modules.
+## Current API Surface
 
-## Key Components
+### `chess_types.h`
 
-### Type Definitions (`chess_types.h`)
+- `Color`, `PieceType`, `SpecialFlags`
+- `GameState` including:
+    - `DRAW_INSUFFICIENT_MATERIAL`
+    - `DRAW_THREEFOLD_REPETITION`
+    - `DRAW_FIFTY_MOVE_RULE`
+- `GameFlags` for castling rights and move counters
 
-- **Color**: Enumeration for chess sides (WHITE, BLACK)
-- **PieceType**: Enumeration for piece types (PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING)
-- **SpecialFlags**: Enumeration for special moves (NONE, CASTLE_KINGSIDE, CASTLE_QUEENSIDE, EN_PASSANT, PROMOTION)
-- **GameState**: Enumeration for game states (ONGOING, CHECKMATE, STALEMATE, etc.)
-- **GameFlags**: Structure tracking castling rights and move counters
+### `position.h`
 
-### Position Structure (`position.h`)
+- `Position { file, rank }`
+- Validation and comparison operators
+- Conversion helpers:
+    - `position_to_algebraic(const Position&)`
+    - `algebraic_to_position(const std::string&)`
 
-Represents a single square on the 8x8 chess board:
-- `file`: 0-7 (a-h, columns)
-- `rank`: 0-7 (1-8, rows)
+### `move.h`
 
-Methods:
-- `is_valid()`: Check if position is within board boundaries
-- `operator==`, `operator<`: Comparison operators
+- `Move { start_pos, end_pos, flags, promotion_piece }`
+- Helpers:
+    - `is_promotion()`
+    - `is_castling()`
+    - `is_en_passant()`
 
-### Move Structure (`move.h`)
+### `grid.h`
 
-Represents a single chess move with:
-- `start_pos`: Source position
-- `end_pos`: Destination position
-- `flags`: Special move flags
-- `promotion_piece`: Piece type for promotion (if applicable)
+`Grid` is the authoritative board-state container and supports both value-type piece access and optional OO adapters.
 
-Methods:
-- `is_promotion()`: Check if move is a promotion
-- `is_castling()`: Check if move is castling
-- `is_en_passant()`: Check if move is en passant capture
+Key capabilities:
 
-### Grid Structure (`grid.h`)
+- Board/state operations:
+    - `initialize_standard_position()`
+    - `get_piece()`, `set_piece()`, `clear_square()`, `is_occupied()`
+    - `get_all_piece_properties()` (authoritative)
+    - `switch_turn()`
+- Search-oriented operations:
+    - `clone()`
+    - `apply_move_inplace(const Move&) -> UndoRecord`
+    - `undo_move(const Move&, const UndoRecord&)`
+- Optional OO bridge:
+    - `ChessPiece` polymorphic interface
+    - `PieceList`, `get_all_pieces()`, `get_piece_at()`
+    - `create_piece(PieceType, Color, Position)` factory declaration
 
-Represents the complete state of a chess board:
-- `board`: 8x8 array of optional PieceProperties
-- `current_turn`: Whose turn it is
-- `flags`: GameFlags structure with castling rights
-
-Includes methods:
-- `get_piece(pos)`: Retrieve piece at position
-- `set_piece(pos, piece)`: Place piece on square
-- `is_occupied(pos)`: Check if square has a piece
-- `initialize_standard_position()`: Set up starting position
-- `switch_turn()`: Toggle current turn
-
-## Design Principles
-
-1. **Independence**: CCI has no dependencies on other modules
-2. **Consistency**: All modules use CCI structures
-3. **Simplicity**: Contains only data structures, no complex logic
-4. **Documentation**: Well-documented interfaces for easy reference
-
-## File Structure
+## Module Layout
 
 ```
-cci/
-├── include/
-│   ├── chess_types.h    # Type definitions
-│   ├── position.h       # Position structure
-│   ├── move.h           # Move structure
-│   └── grid.h           # Board state structure
-├── src/
-│   ├── chess_types.cpp  # Type helper functions
-│   ├── position.cpp     # Position utilities
-│   ├── move.cpp         # Move utilities
-│   └── grid.cpp         # Grid initialization
-└── tests/
-    ├── test_chess_types.cpp
-    ├── test_position.cpp
-    ├── test_move.cpp
-    └── test_grid.cpp
+chess_common_interface/
+    include/
+        chess_types.h
+        position.h
+        move.h
+        grid.h
+    src/
+        chess_types.cpp
+        position.cpp
+        move.cpp
+        grid.cpp
+    tests/
+        test_chess_types.cpp
+        test_position.cpp
+        test_move.cpp
+        test_grid.cpp
+        test_grid_adapted.cpp
+        test_piece_factory.cpp
+        test_main.cpp
 ```
 
-## Future Enhancements
+## Notes
 
-- Optimization of Position hash function for caching
-- Addition of move flags for additional special moves
-- Compression of board representation for engine optimization
+- `Grid` copy is intentionally disabled; use move or `clone()`.
+- CCI remains the single source of truth for board state and shared chess types.

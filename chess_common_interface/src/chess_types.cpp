@@ -1,4 +1,4 @@
-/// @file      chess_types.cpp
+﻿/// @file      chess_types.cpp
 /// @namespace Chess
 /// @brief     Implementation for Chess Common Interface type definitions.
 /// @author    Calileus

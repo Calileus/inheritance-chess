@@ -58,7 +58,10 @@ namespace Chess
     DRAW_THREEFOLD_REPETITION  = 4,
     DRAW_FIFTY_MOVE_RULE       = 5,
     WHITE_RESIGNED             = 6,
-    BLACK_RESIGNED             = 7
+    BLACK_RESIGNED             = 7,
+    DRAW_BY_AGREEMENT          = 8,
+    WHITE_TIMEOUT              = 9,
+    BLACK_TIMEOUT              = 10
   };
 
   /// @struct GameFlags

@@ -1,4 +1,5 @@
 /// @file      test_main.cpp
+/// @namespace Chess
 /// @brief     Main test runner for Google Test
 /// @author    Calileus
 /// @date      2026-02-09

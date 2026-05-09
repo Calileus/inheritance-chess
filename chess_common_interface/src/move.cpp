@@ -1,4 +1,4 @@
-/// @file      move.cpp
+﻿/// @file      move.cpp
 /// @namespace Chess
 /// @brief     Implementation for Chess Common Interface Move structure.
 /// @author    Calileus
@@ -61,3 +61,5 @@ namespace Chess
   }
 
 } // namespace Chess
+
+

@@ -1,16 +1,17 @@
 /// @file      test_grid_adapted.cpp
-/// @brief     Unit tests for CCI Grid structure using adapted test patterns.
+/// @namespace Chess
+/// @brief     Unit tests for CCI Grid structure.
 /// @author    Calileus
 /// @date      2026-01-22
 /// @copyright 2026 Obsidian Honor Coders. Licensed under Apache 2.0.
 /// @see       https://github.com/ObsidianHonorCoders/inheritance-chess
-/// @details   Test suite for CCI Grid functionality adapted from existing test_pawns.cpp patterns:
-///             - Grid initialization and piece management
-///             - Smart pointer memory management patterns
-///             - Position and move validation
-///             - Factory pattern integration
-/// @note      Uses std::unique_ptr for automatic memory management
-///            following modern C++ RAII principles adapted from existing tests.
+/// @details   Test suite covering the Chess::Grid type:
+///             - Standard-position initialization and piece count
+///             - Position validity, equality, and board-coordinate helpers
+///             - Turn switching, castling flags, and halfmove clock
+///             - Piece-access, factory creation, apply_move_inplace, and undo_move
+/// @note      Grid internals are heap-allocated via std::unique_ptr;
+///            the fixture member is a value-type stack variable.
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -21,9 +22,9 @@
 
 /// @class   GridTest
 /// @brief   Test fixture class for Grid unit tests.
-/// @details Provides setup and teardown methods for test environment.
-///          Uses smart pointers for automatic memory management.
-///          Adapted from existing PawnTest patterns.
+/// @details Provides a default-constructed Grid pre-initialized to the standard
+///          opening position. Auxiliary PositionList and ColorList vectors are
+///          reset to empty before every test case.
 class GridTest : public ::testing::Test
 {
   protected:
@@ -32,7 +33,7 @@ class GridTest : public ::testing::Test
     Chess::Grid test_grid;
 
     /// @brief   Available moves vector for test results.
-    /// @details Adapted from existing Piece::PositionList pattern.
+    /// @details Populated by a piece's available_moves() call during testing.
     Chess::PositionList moves = {};
 
     /// @brief   Expected moves vector for test validation.
@@ -40,22 +41,21 @@ class GridTest : public ::testing::Test
     Chess::PositionList expected_moves = {};
 
     /// @brief   Other pieces positions on the board for move validation.
-    /// @details Adapted from existing Piece::PositionList pattern.
+    /// @details Represents positions of all pieces other than the one under test.
     Chess::PositionList other_pieces = {};
 
     /// @brief   Colors corresponding to other_pieces for capture validation.
-    /// @details Adapted from existing Piece::ColorList pattern.
+    /// @details Parallel to other_pieces; used to determine which pieces can be captured.
     Chess::ColorList other_colors = {};
 
     /// @brief   Set up test environment before each test.
-    /// @details Creates new Grid instance and initializes standard position.
-    ///          Adapted from existing PawnTest SetUp() pattern.
+    /// @details Calls initialize_standard_position() on test_grid and resets
+    ///          all auxiliary vectors to empty.
     void SetUp() override
     {
       // Initialize grid to standard position
       test_grid.initialize_standard_position();
       
-      // Clear test vectors (adapted from existing test pattern)
       moves = {};
       expected_moves = {};
       other_pieces = {};
@@ -63,25 +63,23 @@ class GridTest : public ::testing::Test
     }
 
     /// @brief   Clean up test environment after each test.
-    /// @details Automatically releases resources using smart pointer patterns.
-    ///          Adapted from existing PawnTest TearDown() pattern.
+    /// @details Grid and vector members are value types on the fixture; they
+    ///          are destroyed automatically when the fixture goes out of scope.
     void TearDown() override
     {
-      // Smart pointers in Grid will automatically clean up
-      // No manual cleanup needed due to RAII principles
     }
 };
 
 /// @test   Verify grid initialization creates correct piece count.
-/// @details Adapted from existing test patterns that verify piece creation.
+/// @details Confirms get_all_pieces() returns 32 after initialize_standard_position()
+///          and that current_turn is WHITE.
 TEST_F(GridTest, StandardPositionInitialization)
 {
   // Test that standard position has correct number of pieces
   auto pieces = test_grid.get_all_pieces();
   
   // Standard chess starting position has 32 pieces
-  // This test will be fully functional in Phase 2
-  EXPECT_EQ(pieces.size(), 0); // Placeholder until factory is implemented
+  EXPECT_EQ(pieces.size(), 32);
   
   // Verify grid structure is properly initialized
   EXPECT_EQ(test_grid.current_turn, Chess::Color::WHITE);
@@ -96,7 +94,8 @@ TEST_F(GridTest, StandardPositionInitialization)
 }
 
 /// @test   Verify position validation works correctly.
-/// @details Adapted from existing position validation patterns.
+/// @details Checks that in-bounds positions (a1, h8, e4) report is_valid() == true
+///          and out-of-bounds positions (-1,0), (8,8), (100,100) report false.
 TEST_F(GridTest, PositionValidation)
 {
   // Test valid positions
@@ -119,7 +118,8 @@ TEST_F(GridTest, PositionValidation)
 }
 
 /// @test   Verify position equality operators work correctly.
-/// @details Adapted from existing position comparison patterns.
+/// @details Checks == returns true for identical coordinates and != returns
+///          true for positions that differ in rank or file.
 TEST_F(GridTest, PositionEquality)
 {
   Chess::Position pos_a1(0, 0);
@@ -138,7 +138,8 @@ TEST_F(GridTest, PositionEquality)
 }
 
 /// @test   Verify grid piece access methods work correctly.
-/// @details Adapted from existing Board piece access patterns.
+/// @details Confirms that get_piece_at() and is_occupied() return null/false
+///          for squares that are empty in the starting position.
 TEST_F(GridTest, PieceAccessPatterns)
 {
   // Test getting pieces at various positions
@@ -149,7 +150,7 @@ TEST_F(GridTest, PieceAccessPatterns)
   auto piece_e4 = test_grid.get_piece_at(pos_e4);
   auto piece_empty = test_grid.get_piece_at(pos_empty);
   
-  // For now, these should return nullptr since factory isn't implemented
+  // e4 is empty in the starting position.
   EXPECT_EQ(piece_e4, nullptr);
   EXPECT_EQ(piece_empty, nullptr);
   
@@ -158,24 +159,25 @@ TEST_F(GridTest, PieceAccessPatterns)
   EXPECT_FALSE(test_grid.is_occupied(pos_empty));
 }
 
-/// @test   Verify smart pointer patterns work correctly.
-/// @details Adapted from existing smart pointer test patterns.
+/// @test   Verify smart pointer ownership patterns work correctly.
+/// @details Confirms the starting position contains 32 pieces and that
+///          clearing the returned vector reduces it to zero without leaking.
 TEST_F(GridTest, SmartPointerPatterns)
 {
-  // Test piece list functionality (adapted from existing Piece::List patterns)
+  // get_all_pieces() returns a vector of raw pointers into the grid's owned store.
   auto pieces = test_grid.get_all_pieces();
   
-  // Should be empty in Phase 1
-  EXPECT_EQ(pieces.size(), 0);
+  // Starting position should contain all 32 pieces.
+  EXPECT_EQ(pieces.size(), 32);
   
-  // Test that piece list manages memory correctly
-  // This pattern comes from existing Board::pieces management
-  pieces.clear(); // Should automatically clean up memory
+  // Clearing the returned copy does not affect the grid.
+  pieces.clear();
   EXPECT_EQ(pieces.size(), 0);
 }
 
 /// @test   Verify grid turn management works correctly.
-/// @details Adapted from existing turn management patterns.
+/// @details Confirms current_turn starts as WHITE and alternates correctly
+///          across two switch_turn() calls.
 TEST_F(GridTest, TurnManagement)
 {
   // Test initial turn
@@ -190,7 +192,8 @@ TEST_F(GridTest, TurnManagement)
 }
 
 /// @test   Verify game flags initialization.
-/// @details Adapted from existing Properties struct patterns.
+/// @details Confirms all four castling-rights flags are true, halfmove_clock
+///          is 0, and fullmove_number is 1 after initialize_standard_position().
 TEST_F(GridTest, GameFlagsInitialization)
 {
   // Test that game flags are properly initialized
@@ -205,7 +208,8 @@ TEST_F(GridTest, GameFlagsInitialization)
 }
 
 /// @test   Verify piece properties structure works correctly.
-/// @details Adapted from existing piece property patterns.
+/// @details Creates a PieceProperties value directly, sets each field, and
+///          confirms all accessors reflect the assigned values.
 TEST_F(GridTest, PiecePropertiesStructure)
 {
   // Test piece properties creation
@@ -224,19 +228,72 @@ TEST_F(GridTest, PiecePropertiesStructure)
   EXPECT_FALSE(pawn_props.en_passant_vulnerable);
 }
 
-/// @test   Verify factory pattern integration (placeholder).
-/// @details This test will be fully functional in Phase 2.
-///          Adapted from existing piece creation patterns.
-TEST_F(GridTest, FactoryPatternPlaceholder)
+/// @test   Verify factory creates a fully populated piece object.
+/// @details Calls create_piece() for a white pawn at e5 and checks the
+///          returned unique_ptr is non-null with correct type, color, and position.
+TEST_F(GridTest, FactoryCreatesCorrectPiece)
 {
   // This test demonstrates the factory pattern structure
-  // In Phase 2, this will actually create pieces
   
   Chess::Position test_pos(4, 4);
   
-  // This will throw until Phase 2 implementation
-  EXPECT_THROW(
-    Chess::create_piece(Chess::PieceType::PAWN, Chess::Color::WHITE, test_pos),
-    std::runtime_error
-  );
+  auto piece = Chess::create_piece(Chess::PieceType::PAWN, Chess::Color::WHITE, test_pos);
+  ASSERT_NE(piece, nullptr);
+  EXPECT_EQ(piece->get_type(), Chess::PieceType::PAWN);
+  EXPECT_EQ(piece->get_color(), Chess::Color::WHITE);
+  EXPECT_EQ(piece->get_position(), test_pos);
+}
+
+TEST_F(GridTest, ApplyMoveInplaceResetsHalfmoveClockOnCapture)
+{
+  // Create a simple capture position: white pawn e4 captures black pawn d5.
+  test_grid = Chess::Grid{};
+  test_grid.flags.halfmove_clock = 17;
+  test_grid.current_turn = Chess::Color::WHITE;
+
+  test_grid.set_piece(
+      Chess::Position(4, 3),
+      Chess::PieceProperties{Chess::PieceType::PAWN, Chess::Color::WHITE, Chess::Position(4, 3), true, false});
+  test_grid.set_piece(
+      Chess::Position(3, 4),
+      Chess::PieceProperties{Chess::PieceType::PAWN, Chess::Color::BLACK, Chess::Position(3, 4), true, false});
+
+  const Chess::Move move(Chess::Position(4, 3), Chess::Position(3, 4));
+  test_grid.apply_move_inplace(move);
+
+  EXPECT_EQ(test_grid.flags.halfmove_clock, 0);
+}
+
+TEST_F(GridTest, ApplyUndoRestoresEnPassantVulnerabilityState)
+{
+  // White pawn on e4 is currently vulnerable; black pawn double-step should replace vulnerability,
+  // and undo should restore original vulnerability map.
+  test_grid = Chess::Grid{};
+  test_grid.current_turn = Chess::Color::BLACK;
+
+  test_grid.set_piece(
+      Chess::Position(4, 3),
+      Chess::PieceProperties{Chess::PieceType::PAWN, Chess::Color::WHITE, Chess::Position(4, 3), true, true});
+  test_grid.set_piece(
+      Chess::Position(6, 6),
+      Chess::PieceProperties{Chess::PieceType::PAWN, Chess::Color::BLACK, Chess::Position(6, 6), false, false});
+
+  const Chess::Move move(Chess::Position(6, 6), Chess::Position(6, 4));
+  const Chess::UndoRecord undo = test_grid.apply_move_inplace(move);
+
+  auto white_after_apply = test_grid.get_piece(Chess::Position(4, 3));
+  auto black_after_apply = test_grid.get_piece(Chess::Position(6, 4));
+  ASSERT_TRUE(white_after_apply.has_value());
+  ASSERT_TRUE(black_after_apply.has_value());
+  EXPECT_FALSE(white_after_apply->en_passant_vulnerable);
+  EXPECT_TRUE(black_after_apply->en_passant_vulnerable);
+
+  test_grid.undo_move(move, undo);
+
+  auto white_after_undo = test_grid.get_piece(Chess::Position(4, 3));
+  auto black_after_undo = test_grid.get_piece(Chess::Position(6, 6));
+  ASSERT_TRUE(white_after_undo.has_value());
+  ASSERT_TRUE(black_after_undo.has_value());
+  EXPECT_TRUE(white_after_undo->en_passant_vulnerable);
+  EXPECT_FALSE(black_after_undo->en_passant_vulnerable);
 }

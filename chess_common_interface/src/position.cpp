@@ -1,4 +1,4 @@
-/// @file      position.cpp
+﻿/// @file      position.cpp
 /// @namespace Chess
 /// @brief     Implementation for Chess Common Interface Position structure.
 /// @author    Calileus
@@ -53,3 +53,5 @@ namespace Chess
   }
 
 } // namespace Chess
+
+
