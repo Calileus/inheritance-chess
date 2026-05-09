@@ -63,6 +63,29 @@ namespace Chess
   /// @class   ChessEventSystem
   /// @brief   Manages event subscription and emission for chess events.
   /// @details Implements observer pattern for loose coupling between components.
+  ///
+  /// ### Mutation safety policy (single-threaded)
+  ///
+  /// The following guarantees apply when subscribe(), unsubscribe(), or
+  /// a new subscribe() is called from inside a running listener:
+  ///
+  /// - **Unsubscribe self**: the listener is removed from the live index
+  ///   immediately; no further calls to it will occur for subsequent events,
+  ///   but the current invocation completes normally.
+  ///
+  /// - **Unsubscribe another listener**: the target is removed immediately.
+  ///   If it has not yet been dispatched in the current emit cycle it will
+  ///   be skipped; if it has already been dispatched it is simply deregistered.
+  ///
+  /// - **Subscribe a new listener during emit**: the new listener is NOT
+  ///   invoked in the current emit cycle; it becomes active for the next call.
+  ///
+  /// - **Exception in a listener**: caught and logged to stderr; remaining
+  ///   listeners for the same event continue to receive the dispatch.
+  ///
+  /// - **Thread safety**: this class is NOT thread-safe.  External
+  ///   synchronization (mutex, strand, etc.) is required when
+  ///   subscribe/unsubscribe/emit_event are called from multiple threads.
   class ChessEventSystem
   {
     public:
@@ -158,6 +181,7 @@ namespace Chess
 
       std::vector<Subscription> subscriptions_; ///< All active subscriptions
       std::unordered_map<EventType, std::vector<size_t>> type_to_subscriptions_; ///< Index by event type
+        std::unordered_map<size_t, size_t> id_to_index_; ///< Direct mapping from subscription ID to subscriptions_ index
       size_t next_subscription_id_ = 1; ///< Next available subscription ID
   };
 
